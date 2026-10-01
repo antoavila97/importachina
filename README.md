@@ -57,3 +57,29 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+
+## Gestión del proyecto
+
+Tablero: GitHub Projects > Gestion - ImportaChina
+
+### Historias de usuario (issues)
+
+| # | Historia |
+|---|---|
+|US-01|Como Administrador, quiero gestionar usuarios y roles, para controlar el acceso|
+|US-02|Como Administrador, quiero sincronizar productos desde la API de AliExpress|
+|US-03|Como Administrador, quiero definir el margen de ganancia|
+|US-04|Como Administrador, quiero ver reportes de ventas|
+|US-05|Como Vendedor, quiero revisar pedidos|
+|US-06|Como Vendedor, quiero cambiar el estado del pedido|
+|US-07|Como Vendedor, quiero registrar el pago|
+|US-08|Como Cliente, quiero registrarme e iniciar sesión|
+|US-09|Como Cliente, quiero buscar productos por palabra clave usando la API|
+|US-10|Como Cliente, quiero filtrar productos por categoría|
+|US-11|Como Cliente, quiero ver el detalle del producto|
+|US-12|Como Cliente, quiero usar el carrito de compras|
+|US-13|Como Cliente, quiero confirmar mi compra|
+|US-14|Como Cliente, quiero ver mi historial de pedidos|
+|US-15|Como Administrador, quiero registrar cada sincronización de API en logs|
+|US-16|Como Cliente, quiero ver imágenes y precios actualizados|
