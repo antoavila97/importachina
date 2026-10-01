@@ -1,0 +1,144 @@
+============================================================
+16 HISTORIAS DE USUARIO: IMPORTACHINA
+============================================================
+Listas para pegar en Trello, con criterios de aceptación y puntos. Distribuidas en 4 sprints: 52 puntos en total.
+
+--------------------------------------------------
+Sprint 1: Autenticación y roles (4 historias, 12 puntos)
+--------------------------------------------------
+Título: [3] HU-01 Como Cliente, quiero registrarme con mi correo y una contraseña, para poder comprar en la tienda.
+Rol: Cliente
+Puntos de Historia: 3
+Historia: Como Cliente, quiero registrarme con mi correo y una contraseña, para poder comprar en la tienda.
+Criterios de aceptación:
+  - El formulario valida correo único y contraseña de mínimo 8 caracteres.
+  - Al registrarme, mi cuenta queda con el rol Cliente.
+
+Título: [2] HU-02 Como Cliente, quiero iniciar y cerrar sesión, para acceder a mi cuenta de forma segura.
+Rol: Cliente
+Puntos de Historia: 2
+Historia: Como Cliente, quiero iniciar y cerrar sesión, para acceder a mi cuenta de forma segura.
+Criterios de aceptación:
+  - Con credenciales correctas entro a mi cuenta; con incorrectas veo un mensaje de error claro.
+  - Al cerrar sesión no puedo volver a las páginas privadas.
+
+Título: [5] HU-03 Como Administrador, quiero gestionar usuarios y asignarles un rol (Administrador, Vendedor o Cliente), para controlar quién accede a cada función.
+Rol: Administrador
+Puntos de Historia: 5
+Historia: Como Administrador, quiero gestionar usuarios y asignarles un rol (Administrador, Vendedor o Cliente), para controlar quién accede a cada función.
+Criterios de aceptación:
+  - Puedo listar, crear, editar y desactivar usuarios.
+  - Un Vendedor o Cliente no puede entrar al panel de administración.
+
+Título: [2] HU-04 Como Cliente, quiero editar mi perfil y mi dirección de envío, para recibir mis pedidos en el lugar correcto.
+Rol: Cliente
+Puntos de Historia: 2
+Historia: Como Cliente, quiero editar mi perfil y mi dirección de envío, para recibir mis pedidos en el lugar correcto.
+Criterios de aceptación:
+  - Puedo cambiar mi nombre, teléfono y dirección.
+  - Los cambios se guardan y se muestran al volver a entrar.
+
+--------------------------------------------------
+Sprint 2: Catálogo y consumo de la API (5 historias, 15 puntos)
+--------------------------------------------------
+Título: [5] HU-05 Como Administrador, quiero sincronizar productos desde la API de AliExpress, para llenar el catálogo sin cargarlos uno por uno.
+Rol: Administrador
+Puntos de Historia: 5
+Historia: Como Administrador, quiero sincronizar productos desde la API de AliExpress, para llenar el catálogo sin cargarlos uno por uno.
+Criterios de aceptación:
+  - Al lanzar la sincronización se importan entre 20 y 50 productos con título, imagen y precio de costo.
+  - Un producto ya importado no se duplica y cada sincronización queda registrada con su resultado.
+
+Título: [2] HU-06 Como Administrador, quiero crear, editar y eliminar categorías, para mantener el catálogo organizado.
+Rol: Administrador
+Puntos de Historia: 2
+Historia: Como Administrador, quiero crear, editar y eliminar categorías, para mantener el catálogo organizado.
+Criterios de aceptación:
+  - Cada categoría tiene nombre único.
+  - No puedo eliminar una categoría que tenga productos asignados.
+
+Título: [2] HU-07 Como Administrador, quiero definir el margen de ganancia y ver el precio de venta de cada producto, para que la tienda gane sobre el costo de importación.
+Rol: Administrador
+Puntos de Historia: 2
+Historia: Como Administrador, quiero definir el margen de ganancia y ver el precio de venta de cada producto, para que la tienda gane sobre el costo de importación.
+Criterios de aceptación:
+  - El precio de venta se calcula a partir del costo y el margen.
+  - Los cambios de margen se reflejan en el catálogo.
+
+Título: [3] HU-08 Como Cliente, quiero ver el catálogo y el detalle de cada producto, para conocer lo que está disponible antes de comprar.
+Rol: Cliente
+Puntos de Historia: 3
+Historia: Como Cliente, quiero ver el catálogo y el detalle de cada producto, para conocer lo que está disponible antes de comprar.
+Criterios de aceptación:
+  - El catálogo muestra imagen, título y precio, con paginación.
+  - El detalle muestra descripción, imágenes y el botón para agregar al carrito.
+
+Título: [3] HU-09 Como Cliente, quiero buscar productos por palabra clave y filtrarlos por categoría, para encontrar lo que busco rápidamente.
+Rol: Cliente
+Puntos de Historia: 3
+Historia: Como Cliente, quiero buscar productos por palabra clave y filtrarlos por categoría, para encontrar lo que busco rápidamente.
+Criterios de aceptación:
+  - La búsqueda devuelve productos cuyo título contiene la palabra.
+  - Puedo combinar la búsqueda con una categoría y limpiar los filtros.
+
+--------------------------------------------------
+Sprint 3: Carrito, pedidos y pagos (4 historias, 15 puntos)
+--------------------------------------------------
+Título: [5] HU-10 Como Cliente, quiero agregar productos al carrito y modificar sus cantidades, para preparar mi compra antes de pagar.
+Rol: Cliente
+Puntos de Historia: 5
+Historia: Como Cliente, quiero agregar productos al carrito y modificar sus cantidades, para preparar mi compra antes de pagar.
+Criterios de aceptación:
+  - Puedo agregar, cambiar la cantidad y quitar productos.
+  - El carrito muestra subtotales y total actualizados.
+
+Título: [5] HU-11 Como Cliente, quiero confirmar mi compra con mi dirección de envío, para generar mi pedido.
+Rol: Cliente
+Puntos de Historia: 5
+Historia: Como Cliente, quiero confirmar mi compra con mi dirección de envío, para generar mi pedido.
+Criterios de aceptación:
+  - Al confirmar se crea un pedido con estado Pendiente y el carrito queda vacío.
+  - Se guarda el precio de cada producto al momento de la compra.
+
+Título: [3] HU-12 Como Vendedor, quiero ver la lista de pedidos y cambiar su estado, para dar seguimiento a cada venta.
+Rol: Vendedor
+Puntos de Historia: 3
+Historia: Como Vendedor, quiero ver la lista de pedidos y cambiar su estado, para dar seguimiento a cada venta.
+Criterios de aceptación:
+  - Veo los pedidos con cliente, total y estado.
+  - Puedo cambiar el estado entre Pendiente, Pagado, Enviado y Entregado.
+
+Título: [2] HU-13 Como Vendedor, quiero registrar el pago de un pedido, para confirmar que la venta está cubierta.
+Rol: Vendedor
+Puntos de Historia: 2
+Historia: Como Vendedor, quiero registrar el pago de un pedido, para confirmar que la venta está cubierta.
+Criterios de aceptación:
+  - Registro método, monto y fecha del pago.
+  - Al registrar el pago, el pedido pasa a Pagado.
+
+--------------------------------------------------
+Sprint 4: Reportes y publicación (3 historias, 10 puntos)
+--------------------------------------------------
+Título: [3] HU-14 Como Cliente, quiero ver el historial de mis pedidos y su estado, para saber en qué punto está cada compra.
+Rol: Cliente
+Puntos de Historia: 3
+Historia: Como Cliente, quiero ver el historial de mis pedidos y su estado, para saber en qué punto está cada compra.
+Criterios de aceptación:
+  - Solo veo mis propios pedidos.
+  - Cada pedido muestra fecha, productos, total y estado.
+
+Título: [2] HU-15 Como Vendedor, quiero ver el detalle completo de un pedido, para preparar el envío correctamente.
+Rol: Vendedor
+Puntos de Historia: 2
+Historia: Como Vendedor, quiero ver el detalle completo de un pedido, para preparar el envío correctamente.
+Criterios de aceptación:
+  - El detalle muestra productos, cantidades, dirección y datos de contacto.
+  - Puedo volver a la lista sin perder los filtros.
+
+Título: [5] HU-16 Como Administrador, quiero ver un reporte de ventas por rango de fechas y los productos más vendidos, para tomar decisiones sobre el catálogo.
+Rol: Administrador
+Puntos de Historia: 5
+Historia: Como Administrador, quiero ver un reporte de ventas por rango de fechas y los productos más vendidos, para tomar decisiones sobre el catálogo.
+Criterios de aceptación:
+  - Puedo elegir fecha inicial y final y ver el total vendido.
+  - Veo los 5 productos más vendidos del periodo.

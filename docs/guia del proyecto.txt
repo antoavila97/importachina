@@ -1,0 +1,51 @@
+================================================================================
+PRÁCTICA: CONFIGURACIÓN DEL PROYECTO Y USER STORIES
+================================================================================
+
+• Modalidad: individual o en parejas (máximo 2 estudiantes).
+• Paso 1: abre una cuenta en Trello o GitHub Projects.
+• Paso 2: redacta historias de usuario con el formato de la nota.
+• Ejemplo 1: Como Administrador, quiero registrar productos en el catálogo, para mantener actualizado el inventario en tiempo real.
+• Ejemplo 2: Como Cliente, quiero filtrar artículos por categoría, para encontrar lo que busco rápidamente.
+
+[FORMATO DE NOTA]
+Como [rol], quiero [acción], para [beneficio]
+
+
+================================================================================
+PRÁCTICA: DISEÑO DE WIREFRAMES EN FIGMA
+================================================================================
+
+¿Qué es un wireframe? Un esqueleto de baja o media fidelidad que define la estructura de la pantalla antes de programar.
+
+[FLUJO DE DISEÑO]
+Boceto en papel  --->  [ Navegación / Contenido / Botón ]  --->  Interfaz web final
+
+• Crea marcos (Frames) para escritorio y móvil con el plan gratuito de Figma.
+• Organiza componentes: botones, entradas de texto y menús.
+• Define jerarquía visual y alineación con cuadrículas (Layout Grids).
+
+
+================================================================================
+CICLO COMPLETO DEL DESARROLLO
+================================================================================
+
+1. Requerimientos ---> 2. User Stories ---> 3. Tablero ágil ---> 4. Wireframes en Figma ---> 5. Código
+
+Nota:
+Planificar antes de codificar reduce los errores de arquitectura y asegura un sistema alineado con las necesidades reales del usuario.
+
+
+================================================================================
+ACTIVIDAD EVALUATIVA PRÁCTICA: WIREFRAMES Y GESTIÓN
+================================================================================
+
+Caso de estudio: "ImportaChina", tienda web de venta de productos importados de China. El catálogo se alimenta consumiendo la API pública de AliExpress (Affiliate API, método aliexpress.affiliate.product.query), que devuelve títulos, precios e imágenes.
+
+1. Conformación y registro (10 min). Trabaja solo o en equipos de máximo 2. Crea un tablero público en Trello o GitHub Projects llamado "Gestión - ImportaChina" con las columnas Backlog, Por Hacer, En Proceso, En Pruebas y Hecho.
+
+2. Historias de usuario (20 min). Redacta al menos 4 con el formato "Como [rol], quiero [acción] para [beneficio]": 1 de Administrador, 1 de Vendedor y 2 de Cliente. Al menos una debe depender de los datos de la API (por ejemplo, buscar productos por palabra clave).
+
+3. Wireframes en Figma (40 min). En un archivo nuevo, diseña en media fidelidad 2 pantallas: (a) catálogo de productos importados con tarjetas que muestren imagen, título y precio tomados de la API, más buscador y filtros; (b) detalle del producto con botón de compra o añadir al carrito. Incluye barra de navegación, encabezados, campos de entrada, botones de acción principal y pie de página.
+
+Nota técnica: la API exige registro gratuito en developers.aliexpress.com para obtener App Key y App Secret. Las claves se guardan en el servidor, nunca en el código del navegador.

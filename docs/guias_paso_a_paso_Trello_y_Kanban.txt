@@ -1,0 +1,101 @@
+============================================================
+GUÍAS PASO A PASO: TRELLO Y KANBAN
+============================================================
+Para organizar el proyecto ImportaChina: primero aprendes la herramienta (Trello) y luego el método que hay detrás del tablero (Kanban).
+
+------------------------------------------------------------
+Parte 1. Guía de Trello
+------------------------------------------------------------
+Trello organiza el trabajo en tableros, listas y tarjetas. Usa el plan gratuito. Los nombres de los botones pueden variar un poco según la versión de la interfaz.
+
+Paso 1: Crea tu cuenta
+Entra a trello.com, elige registrarte con tu correo (o con una cuenta de Google) y confirma el correo. Al entrar por primera vez, Trello te pedirá crear un espacio de trabajo.
+
+Paso 2: Crea el espacio de trabajo
+Ponle el nombre de la materia o del equipo, por ejemplo "Desarrollo Web - Equipo 1". Un espacio de trabajo agrupa todos los tableros del equipo.
+
+Paso 3: Crea el tablero
+Pulsa "Crear tablero" y llámalo "Gestión - ImportaChina". En visibilidad, elige "Público" si el docente pidió un tablero público (cualquiera con el enlace podrá verlo), o "Espacio de trabajo" si solo debe verlo el equipo.
+
+Paso 4: Crea las listas
+Cada lista es una columna del flujo de trabajo. Crea estas cinco, en este orden:
+  • Backlog: todas las historias de usuario pendientes.
+  • Por Hacer: las historias elegidas para el sprint actual.
+  • En Proceso: lo que se está desarrollando ahora.
+  • En Pruebas: lo terminado que se está verificando.
+  • Hecho: lo que cumple su definición de terminado.
+
+Paso 5: Crea una tarjeta por historia
+En Backlog, pulsa "Añadir una tarjeta" y escribe el título de la historia en el formato acordado.
+Ejemplo: Como Cliente, quiero filtrar productos por categoría, para encontrar lo que busco rápidamente.
+
+Paso 6: Completa cada tarjeta
+Abre la tarjeta y agrega:
+  • Descripción: los criterios de aceptación (mínimo 2).
+  • Lista de verificación: las subtareas técnicas (migración, modelo, controlador, vista, prueba).
+  • Miembros: quién la desarrolla.
+  • Fecha de entrega: el último día del sprint.
+  • Etiquetas: un color por rol (Administrador, Vendedor, Cliente) y otro por sprint.
+Sugerencia: escribe los puntos de la historia (1, 2, 3, 5 u 8) al inicio del título, por ejemplo "[5] Registro de cliente".
+
+Paso 7: Invita al equipo y al docente
+Dentro del tablero, usa "Compartir" para invitar por correo o por enlace. Revisa que el docente tenga acceso antes de la primera revisión.
+
+Paso 8: Trabaja el tablero cada día
+Arrastra la tarjeta a la siguiente lista cuando cambie su estado. Al iniciar un sprint, mueve desde Backlog a "Por Hacer" solo las historias que el equipo se comprometió a terminar.
+  • Comenta en la tarjeta los bloqueos o dudas.
+  • Adjunta capturas de pantalla o el enlace del Pull Request de GitHub.
+  • Usa el filtro del tablero para ver solo tus tarjetas o las de un sprint.
+
+Paso 9: Cierra el sprint
+En la revisión, muestra la lista "Hecho". Después archiva esas tarjetas desde el menú de la lista para dejar el tablero limpio, y deja una nota con los aprendizajes de la retrospectiva en una tarjeta fija.
+
+
+------------------------------------------------------------
+Parte 2. Guía de Kanban
+------------------------------------------------------------
+Kanban es un método para ver el trabajo, limitar lo que haces al mismo tiempo y mantener un flujo constante. Trello es solo la herramienta donde lo aplicas.
+
+Paso 1: Entiende los tres principios
+  • Visualizar: todo el trabajo está en el tablero, nada se hace "por fuera".
+  • Limitar el trabajo en proceso (WIP): menos cosas a la vez significa que se terminan antes.
+  • Gestionar el flujo: si una tarjeta se estanca, el equipo busca por qué.
+
+Paso 2: Diseña el tablero según tu flujo real
+Cada columna debe representar una etapa que de verdad existe en tu trabajo. Así se ve el tablero de ImportaChina a mitad del Sprint 2:
+  • Backlog (sin límite): Reporte de ventas | Estado de pago
+  • Por Hacer (los del sprint): Filtrar por categoría
+  • En Proceso (límite: 3): Importar desde la API | CRUD de productos
+  • En Pruebas (límite: 2): Detalle de producto
+  • Hecho (cumple la definición): Registro y login | Roles
+
+Paso 3: Define reglas claras por columna
+  [Columna] | [Una tarjeta entra cuando...] | [Sale cuando...]
+  Por Hacer | Está en el sprint y tiene criterios de aceptación. | Alguien la toma (sistema "pull").
+  En Proceso | Tiene responsable y rama de Git. | El código está listo y subido en un Pull Request.
+  En Pruebas | El Pull Request está abierto. | Pasa las pruebas y la revisión de un compañero.
+  Hecho | Cumple todos los criterios de aceptación. | Se archiva al cerrar el sprint.
+
+Paso 4: Fija los límites WIP
+Escribe el límite junto al nombre de la columna y respétalo: si En Proceso ya tiene 3 tarjetas, nadie empieza una cuarta hasta terminar una.
+Sugerencia para parejas: En Proceso, máximo 3 tarjetas (o 2 por persona); En Pruebas, máximo 2. Si una columna siempre está llena, ahí está tu cuello de botella.
+
+Paso 5: Aplica el sistema "pull"
+Nadie te asigna trabajo desde arriba: cuando terminas algo, tomas la siguiente tarjeta de Por Hacer, de izquierda a derecha y de arriba hacia abajo. Antes de empezar algo nuevo, mira si puedes ayudar a cerrar lo que está en Pruebas.
+
+Paso 6: Haz una reunión diaria breve
+De 10 minutos, frente al tablero y de derecha a izquierda (primero lo más cercano a Hecho). Pregunta por cada tarjeta, no por cada persona: ¿qué la bloquea?, ¿qué falta para que avance?
+
+Paso 7: Mide el flujo con dos datos
+  • Tiempo de ciclo: Días desde que una tarjeta entra a En Proceso hasta que llega a Hecho.
+  • Rendimiento: Cantidad de tarjetas terminadas por semana.
+Apunta la fecha en que mueves cada tarjeta. Si el tiempo de ciclo crece, revisa los límites WIP.
+
+Paso 8: Combina Kanban con los sprints
+En este proyecto trabajas con sprints (Scrum) y con un tablero Kanban a la vez; a esa mezcla se le llama Scrumban. Los sprints marcan los plazos y las entregas, y Kanban cuida cómo fluye el trabajo dentro de cada sprint.
+
+Paso 9: Evita los errores comunes
+  • Tener tarjetas "en proceso" sin que nadie las trabaje.
+  • Ignorar el límite WIP "solo esta vez".
+  • Tarjetas enormes: si pasa de 8 puntos, divídela.
+  • Actualizar el tablero solo antes de la entrega: debe reflejar la realidad cada día.
