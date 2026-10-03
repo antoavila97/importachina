@@ -13,6 +13,15 @@ class DemoSalesSeeder extends Seeder
 {
     public function run(): void
     {
+        // Idempotente: corre en cada arranque del servidor, asi que si ya hay
+        // pedidos no se vuelve a generar nada. Sin este guard, cada despliegue
+        // sumaria 14 pedidos mas y el reporte de ventas quedaria inflado.
+        if (Order::exists()) {
+            $this->command?->info('Ya hay pedidos cargados: no se generan ventas de demo.');
+
+            return;
+        }
+
         $customers = User::whereHas('role', fn ($q) => $q->where('name', 'Cliente'))->get();
 
         if ($customers->isEmpty()) {
