@@ -1,0 +1,26 @@
+# Railway / Nixpacks: ver https://railway.app/docs
+#
+# El proyecto usa imagenes externas de AliExpress y no tiene colas, asi que
+# no hace falta worker ni "storage:link": solo HTTP.
+#
+# El .env NO se sube al repositorio: las variables se cargan en el panel de
+# Railway (ver PENDIENTES.md, seccion "Publicar en Railway").
+
+[phases.build]
+cmds = [
+    "composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader",
+    "npm ci",
+    "npm run build",
+]
+
+# Corre en cada despliegue, antes de arrancar el servidor. Sin esto las columnas
+# nuevas (por ejemplo phone/address de HU-04) nunca se crean en el MySQL de
+# Railway y el perfil revienta con "Unknown column".
+#
+# --seed es seguro de repetir: RoleSeeder y DatabaseSeeder usan firstOrCreate.
+# Sin esto, la base de Railway quedaria sin roles y sin usuarios para entrar.
+[phases.release]
+cmds = ["php artisan migrate --force --seed"]
+
+[start]
+startCmd = "php artisan serve --host=0.0.0.0 --port=$PORT"
