@@ -1,7 +1,8 @@
 # PENDIENTES — ImportaChina
 
-> **Última actualización:** 3 de octubre de 2026 (punto 6 terminado)
-> **Al volver:** leer este archivo y continuar por el **punto 7** (pendientes menores).
+> **Última actualización:** 3 de octubre de 2026 — punto 6 terminado y **publicado en
+> Railway** (https://importachina-production.up.railway.app).
+> **Al volver:** continuar por el **punto 7** (pendientes menores).
 > Lo único del **punto 5** que falta es un trámite externo: las credenciales de AliExpress.
 > Estado verificado con `php artisan test`: **177 passing (579 assertions)**.
 
@@ -36,13 +37,23 @@ Detalle en la sección del punto 4.
 php artisan serve
 ```
 
-Usuarios (password: `password`):
+MySQL local: el de **Laragon** en el puerto **3307** (`C:\laragon\bin\mysql`). Si no
+responde, se levanta a mano con:
+
+```powershell
+Start-Process "C:\laragon\bin\mysql\mysql-8.4.3-winx64\bin\mysqld.exe" `
+  -ArgumentList "--defaults-file=C:\laragon\bin\mysql\mysql-8.4.3-winx64\my.ini" -WindowStyle Hidden
+```
+
+Usuarios (en local la contraseña es `password`):
 
 | Email | Rol |
 |---|---|
 | `admin@importachina.com` | Administrador |
 | `vendedor@importachina.com` | Vendedor |
 | `cliente@importachina.com` | Cliente |
+
+En **Railway** los tres usan `ImportaChina#2026` (ver "Publicar en Railway").
 
 Datos de demo cargados (14 pedidos + pagos en 30 días) para poder ver el reporte.
 Si se borran: `php artisan db:seed --class=DemoSalesSeeder`
@@ -60,6 +71,7 @@ Si se borran: `php artisan db:seed --class=DemoSalesSeeder`
 | 5 | HU-05 API real de AliExpress | ✅ **Hecho** — solo falta el App Key (trámite externo) |
 | 6 | HU-04 teléfono y dirección en perfil | ✅ **Hecho** |
 | 7 | Mejoras menores | 🟡 A medias — falta lo que dice abajo |
+| — | **Publicar en Railway** | ✅ **Hecho** — https://importachina-production.up.railway.app |
 
 ---
 
@@ -434,74 +446,100 @@ mano no prueba lo que el usuario hace en pantalla.
 
 ---
 
-# 🚂 Publicar en Railway
+# ✅ Publicar en Railway — HECHO
 
-`nixpacks.toml` y `Procfile` ya están en la raíz. Falta commitear y configurar el panel.
+**URL:** https://importachina-production.up.railway.app
+Proyecto `exciting-possibility`, servicio `importachina`, región `sfo`.
 
-## ⚠️ Antes del primer deploy
+Estado verificado con peticiones reales: `/catalogo` 200, login de los 3 usuarios,
+`/admin/usuarios` y `/admin/reportes` 200 como Administrador.
 
-1. **Nada está commiteado.** El último commit es `docs: agregar guias del proyecto`; los
-   ~95 archivos del trabajo real (controladores, modelos, migraciones, vistas) están `??`.
-   Si se despliega ahora, Railway levanta el esqueleto de Laravel **sin nada del proyecto**.
-2. **`APP_DEBUG` debe ser `false`** en producción.
-3. **La fase de release es obligatoria.** Sin `php artisan migrate` en el despliegue, las
-   columnas nuevas (p. ej. `phone` / `address` de HU-04) no existen en el MySQL de Railway y
-   el perfil responde 500 con *Unknown column*.
+## ⚠️ Lo que faltaba y se hizo
 
-## Configuración del panel
+| Qué | Estado |
+|---|---|
+| Código commiteado | ✅ 6 commits en `master` (antes: 95 archivos sin commitear) |
+| Plugin MySQL | ✅ `mysql:9`, volumen `mysql-volume` (500 MB), db `railway` |
+| Dominio público | ✅ `importachina-production.up.railway.app` (antes el servicio no tenía ninguno) |
+| Variables del panel | ✅ 25 variables (ver abajo) |
+| Migraciones + seed en cada deploy | ✅ en el `Procfile` |
+| Contraseñas de `password` | ✅ cambiadas por `ImportaChina#2026` |
 
-- **New Project → Deploy from GitHub repo.** Railway detecta PHP por `composer.json`.
-- **Add plugin → Database → MySQL.** Inyecta `DB_HOST`, `DB_PORT`, `DB_DATABASE`,
-  `DB_USERNAME` y `DB_PASSWORD` como variables compartidas. No hay que escribirlas a mano
-  ni subirlas al repo.
-- En **Variables** del servicio:
+### El bug que costó un despliegue
+
+**Railway construye con `railpack`, no con `nixpacks`, y `railpack` ignora
+`nixpacks.toml`.** La fase `release` que se había escrito ahí nunca corrió: el
+despliegue daba `SUCCESS` y el sitio devolvía **500** con
+`Table 'railway.sessions' doesn't exist`.
+
+Se ve en los logs: el build hace `railpack` + `php artisan config:cache`, que es el
+proveedor de Laravel de railpack, no los comandos de `nixpacks.toml`.
+
+Arreglo: las migraciones se corren desde el **`Procfile`**, que railpack sí respeta:
+
+```
+release: php artisan migrate --force --seed
+web: php artisan migrate --force --seed && php artisan serve --host=0.0.0.0 --port=$PORT
+```
+
+Se dejan las dos líneas: `release` para cuando el proyecto use nixpacks, y la del
+comando `web` para railpack. `migrate` es idempotente, así que correrlo en cada
+arranque es seguro. Y `--seed` no pisa las contraseñas: `DatabaseSeeder` usa
+`firstOrCreate`, así que las de `ImportaChina#2026` sobreviven a cada despliegue.
+
+### Variables del panel
 
 | Variable | Valor |
 |---|---|
 | `APP_NAME` | `ImportaChina` |
 | `APP_ENV` | `production` |
-| `APP_KEY` | el de `php artisan key:generate` (**no** se genera solo) |
+| `APP_KEY` | generado con `php artisan key:generate --show` |
 | `APP_DEBUG` | `false` |
-| `APP_URL` | `https://<dominio>.up.railway.app` |
+| `APP_URL` | `https://importachina-production.up.railway.app` |
 | `APP_LOCALE` / `APP_FALLBACK_LOCALE` | `es` |
-| `SESSION_DRIVER` | `database` |
-| `CACHE_STORE` | `database` |
-| `LOG_CHANNEL` | `stderr` (si no, los logs se pierden) |
-| `ALIEXPRESS_*` | los 7 de `.env.example` — se dejan vacíos hasta que aprueben la app |
+| `APP_FAKER_LOCALE` | `es_ES` |
+| `LOG_CHANNEL` | `stderr` — con `single` los logs se pierden |
+| `LOG_LEVEL` | `info` |
+| `SESSION_DRIVER` / `CACHE_STORE` / `QUEUE_CONNECTION` | `database` |
+| `BCRYPT_ROUNDS` | `10` |
+| `MAIL_MAILER` | `log` |
+| `DB_CONNECTION` | `mysql` |
+| `DB_HOST` / `DB_PORT` | `mysql.railway.internal` / `3306` |
+| `DB_DATABASE` / `DB_USERNAME` / `DB_PASSWORD` | los del plugin MySQL |
+| `ALIEXPRESS_*` | los 7, vacíos hasta que aprueben la app |
 
-`LOG_CHANNEL=stderr` no está en `.env.example` porque en local `single` está bien; en Railway
-el archivo `storage/logs/laravel.log` no se puede leer desde el panel.
+> Las variables se escribieron a mano en vez de referenciar el plugin. El plugin expone
+> `MYSQLHOST`, `MYSQLUSER`… y un `DATABASE_URL` de referencia, pero no `DB_*` en formato
+> Laravel. **No hay que subirlas al repo**: `.env` está en `.gitignore` y el `.env.example`
+> las tiene vacías.
 
-## Lo que hace cada fase
+### Credenciales de prueba
 
-| Fase | Comando | Qué hace |
-|---|---|---|
-| build | `composer install --no-dev` + `npm ci` + `npm run build` | Dependencias y assets |
-| release | `php artisan migrate --force --seed` | Crea las columnas y los roles/usuarios |
-| start | `php artisan serve --host=0.0.0.0 --port=$PORT` | Servidor |
+| Email | Contraseña |
+|---|---|
+| `admin@importachina.com` | `ImportaChina#2026` |
+| `vendedor@importachina.com` | `ImportaChina#2026` |
+| `cliente@importachina.com` | `ImportaChina#2026` |
 
-`--seed` se puede repetir: `RoleSeeder` y `DatabaseSeeder` usan `firstOrCreate`. Sin él, la
-base de Railway queda **sin roles y sin usuarios**: nadie puede entrar a `/login`.
+Cambiadas desde el propio panel (`/admin/usuarios/{id}/edit`), o sea usando HU-03.
+Verificado que la vieja `password` ya no entra.
 
-## Verificar después de desplegar
+### Datos de demo
 
-```
-GET /catalogo          # público, tiene que abrir sin credenciales
-GET /login             # existe
-/perfil                # redirige a /login
-```
+`DemoSalesSeeder` **no** corre en el despliegue (a propósito: son 14 pedidos falsos), así
+que el reporte de ventas de HU-16 sale vacío en Railway. Para demostrarlo allí hay que
+correrlo a mano desde el panel de Railway o por SSH.
 
-Entrar con `admin@importachina.com` / `password`, y **cambiar las tres contraseñas** antes de
-entregar el trabajo (`php artisan tinker` o el panel de usuarios).
+### Utilidades
 
-## Datos de demo
-
-`DemoSalesSeeder` **no** corre en el release (a propósito: son 14 pedidos falsos). El reporte
-de ventas de HU-16 saldría vacío en Railway. Si hace falta demonstrarlo allí:
-
-```
-php artisan db:seed --class=DemoSalesSeeder
-```
+- `railway logs --deployment <id>` — logs del arranque (donde se ve el `migrate`).
+- `railway logs --build <id>` — logs del build.
+- `railway variables --kv` — ver las variables (imprime secretos en claro).
+- `railway up --detach` — desplegar sin esperar.
+- El **dominio TCP público** del MySQL (`mysql-production-3ee8.up.railway.app`) **no**
+  responde en ningún puerto: no se puede conectar MySQL de Railway desde la máquina.
+  Para hablar con esa base hay que usar `railway shell` / `railway connect`.
+- `railway ssh` quedó sin usar: necesita la clave en el agente de SSH y se colgaba.
 
 ---
 
@@ -627,12 +665,13 @@ php vendor\bin\pint app/.../X.php tests/...
       Solo falta rellenar `ALIEXPRESS_APP_KEY` / `ALIEXPRESS_APP_SECRET` cuando se apruebe
       la app en `developers.aliexpress.com` (el trámite tarda días), y correr
       `php artisan app:sync-aliexpress-products --limit=20` para confirmar contra la API real.
-- [ ] **Punto 6 (HU-04):** hecho. Migración `phone` / `address`, inputs en el perfil,
+- [x] **Punto 6 (HU-04):** hecho. Migración `phone` / `address`, inputs en el perfil,
       `CheckoutRequest` y la dirección del perfil como valor por defecto en el carrito.
+- [x] **Railway:** hecho y verificado en vivo. Plugin MySQL, 25 variables, dominio,
+      migraciones en el `Procfile` y contraseñas cambiadas.
 - [ ] **Punto 7:** tests de HU-01, HU-02, HU-09; documento de requerimientos;
       ramas por historia y Pull Requests.
-- [ ] **Railway:** commitear y pushear (ahora nada está commiteado), crear el plugin MySQL,
-      poner las variables del panel con `APP_DEBUG=false` y `LOG_CHANNEL=stderr`, y cambiar
-      las contraseñas de los 3 usuarios de prueba. Instructions en "Publicar en Railway".
+- [ ] **Punto 8 (decidir):** `resources/views/welcome.blade.php` (82 KB, splash de Laravel
+      sin usar) y los duplicados de `docs/` ya borrados de la raíz.
 - [ ] **Pregunta para la docente:** confirmar si el "acceso como invitado" es el tablero
       Trello público o una cuarta persona en el sistema web. Ver la sección de arriba.
