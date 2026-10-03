@@ -35,4 +35,20 @@ return [
         ],
     ],
 
+    'aliexpress' => [
+        'app_key' => env('ALIEXPRESS_APP_KEY'),
+        'app_secret' => env('ALIEXPRESS_APP_SECRET'),
+        'tracking_id' => env('ALIEXPRESS_TRACKING_ID'),
+
+        // Endpoint oficial de la Open Platform (region singapore).
+        'base_url' => env('ALIEXPRESS_BASE_URL', 'https://api-sg.aliexpress.com/sync'),
+
+        // md5 = md5(secret + params + secret); hmac = HMAC-MD5 de los params.
+        'sign_method' => env('ALIEXPRESS_SIGN_METHOD', 'md5'),
+
+        // Se usan cuando el administrador no escribe nada en el panel.
+        'default_keyword' => env('ALIEXPRESS_DEFAULT_KEYWORD', 'bluetooth earbuds'),
+        'margin_pct' => (float) env('ALIEXPRESS_MARGIN_PCT', 30),
+    ],
+
 ];
