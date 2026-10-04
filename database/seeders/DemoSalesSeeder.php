@@ -16,6 +16,8 @@ class DemoSalesSeeder extends Seeder
 {
     public function run(): void
     {
+        $this->limpiarImagenesDeServiciosApagados();
+
         // Idempotente: corre en cada arranque del servidor, asi que si ya hay
         // pedidos no se vuelve a generar nada. Sin este guard, cada despliegue
         // sumaria 14 pedidos mas y el reporte de ventas quedaria inflado.
@@ -58,7 +60,11 @@ class DemoSalesSeeder extends Seeder
                 'updated_at' => $placedAt,
             ]);
 
-            $lines = $catalog->random(fake()->numberBetween(1, 3));
+            // Sin el min(), Collection::random() lanza si se piden mas lineas
+            // de las que hay en el catalogo: con un solo producto, pedir 2 o 3
+            // reventaba el arranque del servidor.
+            $lineas = min(3, max(1, $catalog->count()));
+            $lines = $catalog->random(fake()->numberBetween(1, $lineas));
             $total = 0;
 
             foreach ($lines as $product) {
@@ -88,6 +94,32 @@ class DemoSalesSeeder extends Seeder
         }
 
         $this->command?->info('Ventas de demo generadas: '.Order::count().' pedidos.');
+    }
+
+    /**
+     * Los productos de la demo vieja guardan la URL de via.placeholder.com, un
+     * servicio que se apago en 2024. Cada visita al catalogo los pedia y el
+     * navegador esperaba un timeout antes de mostrar el placeholder.
+     *
+     * Poner image_url en null hace que la vista muestre el placeholder local de
+     * una vez. Es idempotente (WHERE ... LIKE sobre lo que ya se limpio no
+     * cambia nada) y va antes del early return, porque aunque no haya que crear
+     * ventas la limpieza sigue siendo necesaria.
+     */
+    private function limpiarImagenesDeServiciosApagados(): void
+    {
+        $obsoletos = ['via.placeholder.com', 'placehold.co', 'placekitten.com', 'dummyimage.com'];
+
+        $total = 0;
+
+        foreach ($obsoletos as $host) {
+            $total += Product::where('image_url', 'like', '%'.$host.'%')
+                ->update(['image_url' => null]);
+        }
+
+        if ($total > 0) {
+            $this->command?->info("Imagenes de servicios apagados limpiadas: {$total}.");
+        }
     }
 
     /**
