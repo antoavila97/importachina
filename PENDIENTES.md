@@ -1,15 +1,19 @@
 # PENDIENTES — ImportaChina
 
-> **Última actualización:** 4 de octubre de 2026 — **punto 8 terminado**. El bug de HU-01
-> está corregido y cubierto: el registro público asigna el rol `Cliente` y hay tests que
-> **fallan si el bug vuelve**. De paso se completaron los tests de HU-01 y HU-02, que
-> antes eran los de Breeze y no assertaban ni un criterio.
+> **Última actualización:** 4 de octubre de 2026 — **punto 10 terminado**. El sitio en
+> producción se veía **sin estilos y con todas las imágenes rotas**. La causa real era
+> **contenido mixto**: Laravel no confiaba en el proxy de Railway, así que generaba los
+> assets con `http://` en una página `https://` y el navegador los bloqueaba. El CSS
+> nunca estuvo faltando. Además se rediseñó el catálogo y se reconstruyó la navegación
+> responsive. Ver "PUNTO 10".
 >
-> **Al volver:** por el **punto 7**. Lo más grande sigue siendo el **documento de
-> requerimientos** (§1-2 de la guía 4.1), que no existe.
+> De paso se corrigió el **encoding**: varias vistas tenían la ñ y la á rotas
+> ("CategorÃ­a"), y el README tenía 5 caracteres dañados.
 >
-> Apareció un **hallazgo nuevo**: las pantallas de Breeze (login, registro, perfil,
-> dashboard) están **en inglés** y no hay carpeta `lang/`. Ver "PUNTO 9".
+> **Al volver:** por el **documento de requerimientos** (§1-2 de la guía 4.1), que
+> sigue sin existir, y por el **punto 7**. La docente tiene una **pregunta abierta
+> sobre el "acceso como invitado"** (§ "Pregunta abierta"), que es lo único que
+> bloquea el despliegue público.
 >
 > Lo único del **punto 5** que falta es un trámite externo: las credenciales de AliExpress.
 > Estado verificado con `php artisan test`: **211 passing (691 assertions)**.
@@ -835,6 +839,124 @@ los mensajes de validación que hoy salen en inglés.
 > literal en español, a propósito. El criterio dice "veo un **mensaje de error claro**", no
 > "veo esta frase": así el test sigue siendo válido si el idioma cambia y **no hay que
 > editarlo** cuando se traduzca. Verificaba que el mensaje se ve, nada más.
+
+---
+
+# ✅ PUNTO 10 — El sitio en producción se veía sin estilos y con imágenes rotas (4 de octubre)
+
+## Qué pasa
+
+Dos defectos distintos, y solo uno era culpa del código:
+
+1. **La página salía sin ningún estilo** (HTML crudo, el logo del Laravel gigante,
+   botones con el aspecto por defecto).
+2. **Todas las imágenes del catálogo salían rotas**, mostrando solo el texto `alt`.
+
+## Causa raíz
+
+**1. Contenido mixto (`http://` en una página `https://`) — este era el bug de verdad.**
+
+Railway termina el TLS y reenvía la petición a PHP con la cabecera
+`X-Forwarded-Proto: https`. Laravel no confiaba en ese proxy, así que creía que
+la petición había llegado por `http` y `asset()` armaba las URLs con `http://`.
+El navegador bloquea CSS y JS que vienen por `http` dentro de una página `https`.
+
+Lo que devolvía producción:
+
+```html
+<link rel="stylesheet" href="http://importachina-production.up.railway.app/build/assets/app-CJnlD2Am.css">
+```
+
+El CSS **no faltaba**: `https://.../build/assets/app-CJnlD2Am.css` responde **200 con
+40 KB**. Estaba ahí y el navegador lo estaba rechazando. Por eso el logo se veía
+gigante: el `class="h-9"` del SVG nunca se aplicó.
+
+Lo que **no** era el problema (se descartó uno por uno):
+
+| Sospecha | Veredicto |
+|---|---|
+| El build de Vite no corre en Railway | ❌ Corre. El hash de producción (`app-CJnlD2Am.css`) difiere del local, así que el CSS se recompiló. |
+| Falta `@vite` o el `@vite` está mal | ❌ `layouts/app.blade.php:15` está correcto. |
+| Tailwind no encuentra los `.blade.php` | ❌ `tailwind.config.js` ya incluye `./resources/views/**/*.blade.php`. |
+| Falta `storage:link` | ❌ No aplica: no hay imágenes en `storage/`, todas son URLs externas. |
+
+**2. Imágenes rotas — causa independiente.** `ProductFactory` usaba
+`fake()->imageUrl(600, 400)`, que genera URLs de **`via.placeholder.com`**, un
+servicio que **se apagó en 2024**. La página pedía
+`https://via.placeholder.com/600x400.png/00ff22?text=aut` y recibía error.
+
+## Qué se cambió
+
+| Archivo | Cambio |
+|---|---|
+| `bootstrap/app.php` | `trustProxies(at: '*', headers: HEADER_X_FORWARDED_*)`. Es lo que arregla el contenido mixto. |
+| `app/Providers/AppServiceProvider.php` | `URL::forceScheme('https')` en producción, como red de seguridad si `APP_URL` viniera en `http`. |
+| `public/images/placeholder.svg` | Placeholder local (SVG, degradado + ícono). |
+| `resources/views/components/product-image.blade.php` | Componente nuevo: si no hay URL usa el placeholder, y si la URL existe pero **falla** (403 del CDN de AliExpress) un `onerror` cambia al placeholder. |
+| `database/factories/ProductFactory.php` | `image_url` a `null` en vez de `via.placeholder.com`. Nuevo estado `conImagen($url)` para cuando sí hay URL real. |
+| `database/seeders/DemoSalesSeeder.php` | Catálogo de demo con **8 productos reales** ("Auriculares inalámbricos Bluetooth 5.3", "Power bank 20000mAh con carga rápida") en vez de títulos de Faker del tipo "Sint Saepe Ipsa". Sigue siendo idempotente. |
+
+## Rediseño del catálogo (pedido del 4 de octubre)
+
+- **Barra de navegación responsive.** Los enlaces estaban **escritos dos veces**, una
+  en la barra de escritorio y otra en el menú móvil, y se desincronizaban: un texto
+  corregido en un bloque dejaba el otro roto. Ahora hay un único componente
+  `x-app-nav-links` que recibe `variant="desktop"|"mobile"`. Se añadió el ícono de
+  escritorio al botón del menú, `aria-expanded` y `aria-controls`.
+- **Encabezado del catálogo:** título, contador de resultados, buscador con ícono,
+  selector de categorías y botón **Filtrar** en una sola fila (se apila en móvil).
+  Se añadió **Limpiar** cuando hay filtros activos.
+- **Grid:** 1 columna en móvil, 2 en tablet, 3 en `lg`, 4 en `xl`.
+- **Tarjetas:** `aspect-[4/3]` fijo para que no salte el layout, zoom al hacer hover,
+  badge **Nuevo** (productos de los últimos 15 días) y **Agotado**, precio en Bs,
+  unidades disponibles y botón deshabilitado sin stock.
+- **Estado vacío** con ícono, explicación y botón "Ver todo el catálogo".
+- **Paginación** estilizada (`resources/views/vendor/pagination/tailwind.blade.php`):
+  por defecto Laravel imprime "Previous/Next" en inglés y feo.
+- **Detalle del producto:** migas de pan, galería con miniaturas, botón a ancho
+  completo en móvil. Se repararon los textos que quedaron corruptos al arreglar el
+  encoding ("Categoría" y "Añadir" salían con la ñ y la á rotas).
+- **Footer** nuevo, y `layouts/app.blade.php` ahora mete el contenido en un
+  contenedor con padding (antes el contenido pegaba a los bordes).
+- **Logo propio** en vez del logo de Laravel.
+
+## Tests agregados
+
+`tests/Feature/CatalogPageTest.php`, 10 tests:
+
+- Los assets se sirven por `https` cuando llega `X-Forwarded-Proto` (la regresión
+  del contenido mixto).
+- Producto sin imagen → placeholder local.
+- Imagen externa que falla → `onerror` al placeholder.
+- No aparece ninguna URL de `via.placeholder.com` / `placehold.co` / `placekitten.com`.
+- Badge de agotado.
+- El filtro por categoría sigue funcionando.
+- La búsqueda por texto sigue funcionando.
+- Estado vacío.
+- Paginación con "Mostrando 13 a 14 de 14 productos".
+- El menú y el pie no dependen del rol.
+
+## Comandos
+
+```bash
+php artisan test      # 221 passed (729 assertions)
+./vendor/bin/pint     # passed
+npm run build         # app-Bg0vgP5R.css 54.76 kB
+```
+
+## Pendiente del lado de Railway (no es código)
+
+En el panel de Railway conviene confirmar:
+
+- `APP_URL` = `https://importachina-production.up.railway.app` (**con `https://`**).
+  `ASSET_URL` no hace falta: las URLs se resuelven solas una vez confiados los proxies.
+- `APP_LOCALE=es` y `APP_FALLBACK_LOCALE=es`, para que los mensajes de validación
+  salgan en español como en local.
+
+> Los productos de demo que ya estaban en la base de producción **mantienen sus
+> títulos de Faker**: el seeder solo crea el catálogo si la tabla está vacía. Para
+> ver los nombres nuevos hay que vaciar la tabla `products` (y las referencias de
+> `order_items`) una vez, no hace falta tocar código.
 
 ---
 

@@ -59,7 +59,7 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
 
 
-## Gestión del proyecto
+## GestiÃ³n del proyecto
 
 Tablero: GitHub Projects > Gestion - ImportaChina
 
@@ -74,12 +74,12 @@ Tablero: GitHub Projects > Gestion - ImportaChina
 |US-05|Como Vendedor, quiero revisar pedidos|
 |US-06|Como Vendedor, quiero cambiar el estado del pedido|
 |US-07|Como Vendedor, quiero registrar el pago|
-|US-08|Como Cliente, quiero registrarme e iniciar sesión|
+|US-08|Como Cliente, quiero registrarme e iniciar sesiÃ³n|
 |US-09|Como Cliente, quiero buscar productos por palabra clave usando la API|
-|US-10|Como Cliente, quiero filtrar productos por categoría|
+|US-10|Como Cliente, quiero filtrar productos por categorÃ­a|
 |US-11|Como Cliente, quiero ver el detalle del producto|
 |US-12|Como Cliente, quiero usar el carrito de compras|
 |US-13|Como Cliente, quiero confirmar mi compra|
 |US-14|Como Cliente, quiero ver mi historial de pedidos|
-|US-15|Como Administrador, quiero registrar cada sincronización de API en logs|
-|US-16|Como Cliente, quiero ver imágenes y precios actualizados|
+|US-15|Como Administrador, quiero registrar cada sincronizaciÃ³n de API en logs|
+|US-16|Como Cliente, quiero ver imÃ¡genes y precios actualizados|

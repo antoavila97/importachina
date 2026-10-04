@@ -2,12 +2,15 @@
 
 namespace Database\Seeders;
 
+use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class DemoSalesSeeder extends Seeder
 {
@@ -31,7 +34,7 @@ class DemoSalesSeeder extends Seeder
         $catalog = Product::where('active', true)->get();
 
         if ($catalog->isEmpty()) {
-            $catalog = Product::factory()->count(8)->create();
+            $catalog = $this->crearCatalogoDeDemo();
         }
 
         $statuses = [
@@ -85,5 +88,56 @@ class DemoSalesSeeder extends Seeder
         }
 
         $this->command?->info('Ventas de demo generadas: '.Order::count().' pedidos.');
+    }
+
+    /**
+     * Catalogo de ejemplo con nombres reales de producto de importacion.
+     *
+     * Antes se usaba Product::factory(), que ponia titles de Faker del tipo
+     * "Sint Saepe Ipsa" y categorias tambien de Faker. En una demo que se
+     * presenta, eso se ve falso.
+     *
+     * Los productos quedan con image_url en null a proposito: la vista muestra
+     * el placeholder local. Las imagenes de verdad llegan con la
+     * sincronizacion de la API de AliExpress (HU-05).
+     *
+     * @return Collection<int, Product>
+     */
+    private function crearCatalogoDeDemo()
+    {
+        $catalogo = [
+            ['Hogar', 'Organizador de almacenaje plegable 3 niveles', 12.90, 45],
+            ['Hogar', 'Set de 6 potes herméticos de cocina', 18.50, 35],
+            ['Hogar', 'Lámpara de mesa LED con control táctil', 9.75, 60],
+            ['Electrónica', 'Auriculares inalámbricos Bluetooth 5.3', 14.30, 50],
+            ['Electrónica', 'Cargador rápido USB-C 65W GaN', 16.80, 40],
+            ['Electrónica', 'Power bank 20000mAh con carga rápida', 21.40, 35],
+            ['Moda', 'Bolso tote de lona con cierre impermeable', 11.20, 55],
+            ['Accesorios', 'Gafas de sol polarizadas UV400', 7.90, 70],
+        ];
+
+        $productos = collect();
+
+        foreach ($catalogo as $i => [$categoria, $titulo, $costo, $margen]) {
+            $productos->push(Product::factory()->create([
+                'category_id' => Category::firstOrCreate(
+                    ['name' => $categoria],
+                    ['slug' => Str::slug($categoria)]
+                )->id,
+                'external_id' => 'DEMO-'.str_pad((string) ($i + 1), 4, '0', STR_PAD_LEFT),
+                'title' => $titulo,
+                'description' => 'Producto de ejemplo para la demo. El catalogo real se '
+                    .'llena con la sincronizacion de la API de AliExpress (HU-05).',
+                'cost_price' => $costo,
+                'margin_pct' => $margen,
+                'sale_price' => round($costo * (1 + $margen / 100), 2),
+                'image_url' => null,
+                'source_url' => null,
+            ]));
+        }
+
+        $this->command?->info('Catalogo de demo: '.$productos->count().' productos.');
+
+        return $productos;
     }
 }
