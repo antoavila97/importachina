@@ -133,24 +133,16 @@ class DemoSalesSeeder extends Seeder
      * el placeholder local. Las imagenes de verdad llegan con la
      * sincronizacion de la API de AliExpress (HU-05).
      *
+     * La lista vive en DemoCatalog porque la migracion que reescribe los
+     * productos viejos en produccion necesita exactamente los mismos datos.
+     *
      * @return Collection<int, Product>
      */
     private function crearCatalogoDeDemo()
     {
-        $catalogo = [
-            ['Hogar', 'Organizador de almacenaje plegable 3 niveles', 12.90, 45],
-            ['Hogar', 'Set de 6 potes herméticos de cocina', 18.50, 35],
-            ['Hogar', 'Lámpara de mesa LED con control táctil', 9.75, 60],
-            ['Electrónica', 'Auriculares inalámbricos Bluetooth 5.3', 14.30, 50],
-            ['Electrónica', 'Cargador rápido USB-C 65W GaN', 16.80, 40],
-            ['Electrónica', 'Power bank 20000mAh con carga rápida', 21.40, 35],
-            ['Moda', 'Bolso tote de lona con cierre impermeable', 11.20, 55],
-            ['Accesorios', 'Gafas de sol polarizadas UV400', 7.90, 70],
-        ];
-
         $productos = collect();
 
-        foreach ($catalogo as $i => [$categoria, $titulo, $costo, $margen]) {
+        foreach (array_values(DemoCatalog::PRODUCTS) as $i => [$categoria, $titulo, $costo, $margen]) {
             $productos->push(Product::factory()->create([
                 'category_id' => Category::firstOrCreate(
                     ['name' => $categoria],
@@ -158,8 +150,7 @@ class DemoSalesSeeder extends Seeder
                 )->id,
                 'external_id' => 'DEMO-'.str_pad((string) ($i + 1), 4, '0', STR_PAD_LEFT),
                 'title' => $titulo,
-                'description' => 'Producto de ejemplo para la demo. El catalogo real se '
-                    .'llena con la sincronizacion de la API de AliExpress (HU-05).',
+                'description' => DemoCatalog::DESCRIPTION,
                 'cost_price' => $costo,
                 'margin_pct' => $margen,
                 'sale_price' => round($costo * (1 + $margen / 100), 2),
