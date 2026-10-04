@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -15,6 +16,8 @@ use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
 {
+    public const ROL_POR_DEFECTO = 'Cliente';
+
     /**
      * Display the registration view.
      */
@@ -40,6 +43,8 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role_id' => Role::firstOrCreate(['name' => self::ROL_POR_DEFECTO])->id,
+            'status' => User::STATUS_ACTIVE,
         ]);
 
         event(new Registered($user));

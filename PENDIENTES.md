@@ -1,10 +1,193 @@
 # PENDIENTES — ImportaChina
 
-> **Última actualización:** 3 de octubre de 2026 — punto 6 terminado y **publicado en
-> Railway** (https://importachina-production.up.railway.app).
-> **Al volver:** continuar por el **punto 7** (pendientes menores).
+> **Última actualización:** 4 de octubre de 2026 — **punto 8 terminado**. El bug de HU-01
+> está corregido y cubierto: el registro público asigna el rol `Cliente` y hay tests que
+> **fallan si el bug vuelve**. De paso se completaron los tests de HU-01 y HU-02, que
+> antes eran los de Breeze y no assertaban ni un criterio.
+>
+> **Al volver:** por el **punto 7**. Lo más grande sigue siendo el **documento de
+> requerimientos** (§1-2 de la guía 4.1), que no existe.
+>
+> Apareció un **hallazgo nuevo**: las pantallas de Breeze (login, registro, perfil,
+> dashboard) están **en inglés** y no hay carpeta `lang/`. Ver "PUNTO 9".
+>
 > Lo único del **punto 5** que falta es un trámite externo: las credenciales de AliExpress.
-> Estado verificado con `php artisan test`: **177 passing (579 assertions)**.
+> Estado verificado con `php artisan test`: **211 passing (691 assertions)**.
+
+### ✅ PUNTO 8 — HU-01 no asignaba el rol Cliente (HECHO)
+
+**Era el pendiente más urgente del proyecto.** No estaba en ninguna sesión anterior.
+
+`app/Http/Controllers/Auth/RegisteredUserController.php` creaba al usuario con
+`User::create()` pasando solo `name`, `email` y `password`. **No asignaba `role_id`**, así
+que la columna quedaba en `NULL`.
+
+Verificado empíricamente (test temporal que registró un usuario por `/register`):
+
+```
+[HU-01] role_id tras registro publico = NULL
+[HU-01] hasRole(Cliente) = false
+[HU-01] isActive = true
+```
+
+El criterio de aceptación de **HU-01** decía *"Al registrarme, mi cuenta queda con el rol
+Cliente"*. **No se cumplía.** El usuario podía comprar, pero el sistema no lo sabía: para
+`User::hasRole('Cliente')` era un usuario **sin rol**.
+
+Por qué no se notó: no había ningún error visible. `role_id` es nullable en la migración, el
+panel de administración toleraba el rol vacío (la lista responde 200) y nadie miraba esa
+columna para un alta por registro público. Es la misma categoría de bug que el del punto 6:
+**el código "parecía" completo y la pantalla no avisaba.**
+
+#### El arreglo
+
+`app/Http/Controllers/RegisteredUserController.php` — `store()`:
+
+```php
+$user = User::create([
+    'name' => $request->name,
+    'email' => $request->email,
+    'password' => Hash::make($request->password),
+    'role_id' => Role::firstOrCreate(['name' => self::ROL_POR_DEFECTO])->id,
+    'status' => User::STATUS_ACTIVE,
+]);
+```
+
+Dos detalles deliberados:
+
+- **`firstOrCreate` y no `->value('id')`.** El `PENDIENTES` viejo proponía
+  `Role::where('name', 'Cliente')->value('id')`, pero eso devuelve `null` si el rol no
+  existe y volvemos al mismo bug. `firstOrCreate` es el patrón que ya usan
+  `RoleSeeder` y `UserFactory::role()`, así que además coincide con el código del proyecto.
+- **`'status'` explícito.** La migración ya pone `default('active')`, pero `create()` no
+  recarga el modelo, así que el objeto en memoria quedaba con `status = null` — **exactamente
+  el bug del punto 3**. `Auth::login()` guarda ese objeto en el guard de inmediato, así que
+  el fallo se producía en la misma petición del registro. Ahora hay un test que asserta
+  `Auth::user()->isActive()` después del POST, que es donde se nota.
+
+#### Los tests: 30 nuevos, y se verificó que fallan sin el arreglo
+
+Esto es lo importante: **un test que no falla sin el bug no prueba nada.** Se comprobó
+comentando el arreglo en el controlador y corriendo la suite.
+
+| Archivo | Antes | Ahora | Qué asserta |
+|---|---|---|---|
+| `tests/Feature/Auth/RegistrationTest.php` | 2 (Breeze) | **14** | HU-01 completa |
+| `tests/Feature/Auth/AuthenticationTest.php` | 4 (Breeze) | **22** | HU-02 completa |
+
+**HU-01** — los dos criterios de la guía 4.3, sobre el efecto real en la base:
+
+- `role_id` no es `null` y el rol es `Cliente`; `hasRole('Cliente')` es `true`.
+- **No hay escalamiento:** aunque el POST mande `role_id` de Administrador a mano, el
+  registro público siempre deja `Cliente`.
+- El rol `Cliente` se **reutiliza**, no se duplica al registrar dos personas.
+- `Auth::user()->isActive()` es `true` en memoria (el caso del bug del punto 3).
+- Correo **único**, mínimo **8 caracteres** (y que 8 exactos se aceptan), confirmación
+  obligatoria, correo inválido rechazado, nombre obligatorio, contraseña hasheada.
+- Un Cliente **no** entra a `/admin/*` ni a `/vendedor/*` (403).
+
+**HU-02** — los dos criterios:
+
+- Credenciales correctas → entra, y la página de destino **de verdad responde 200**.
+- Credenciales incorrectas / correo inexistente → **el mensaje de error se ve en pantalla**
+  (se asserta `__('auth.failed')`, no un literal, para no atar el test al idioma).
+- Un usuario **desactivado** no puede entrar aunque la contraseña sea correcta (HU-03 lo
+  permite desactivar; ese cierre faltaba y ahora está cubierto).
+- **Criterio 2, que antes no se comprobaba:** las 7 páginas privadas de los módulos
+  (`/dashboard`, `/carrito`, `/mis-pedidos`, `/profile`, `/vendedor/pedidos`,
+  `/admin/usuarios`, `/admin/reportes`) con un `@DataProvider` de ruta + rol:
+  - sin sesión → todas rebotan al login;
+  - con sesión y el rol correcto → abren con 200;
+  - **después de cerrar sesión → vuelven a estar cerradas.**
+
+  La segunda mitad es la que faltaba: los tests de Breeze solo hacían `assertGuest()`
+  después del logout, sin comprobar que las páginas Privatizadas quedaran cerradas de verdad.
+
+⚠️ **Los tests siembran `RoleSeeder` en `setUp()`.** Con `RefreshDatabase` los seeders **no**
+corren, así que sin roles en la base el registro no podría asignar ninguno. Se sembró
+explícitamente para que el escenario sea determinista y no dependa del `firstOrCreate` del
+propio código bajo prueba.
+
+Verificado contra la suite: **211 passing (691 assertions)**, antes 181.
+
+### ✅ Bug 2 — Las cuatro guías de la raíz no están commiteadas
+
+`git status` las muestra como `??` (untracked):
+
+```
+?? "4.0. Guia principal.txt"
+?? "4.1. Guía de desarrollo_ ImportaChina con Laravel, PHP y MySQL.html"
+?? "4.2. Guías paso a paso_ Trello y Kanban.html"
+?? "4.3. 16 historias de usuario_ ImportaChina.html"
+```
+
+Las HTML de **4.2 y 4.3 solo existen ahí**: en `docs/` únicamente están las versiones `.txt`
+(`guia del proyecto.txt`, `guias_paso_a_paso_Trello_y_Kanban.txt`, etc.), que son
+**contenido distinto**, no las HTML. O sea: **las guías 4.2 y 4.3 no están en GitHub.**
+
+Mientras no se commiteen, el repositorio no respalda el material de la práctica. Hay que
+decidir la fuente de verdad (ver punto 7) y **commitear lo que se conserve**.
+
+### ✅ Bug 3 — Este archivo mentía en dos cifras (resuelto)
+
+- Decía que `AccessControlTest` tiene **30 tests**. Tiene **26**. (7 métodos, pero tres de
+  ellos llevan `@DataProvider` y se expanden.)
+- Decía que **HU-01, HU-02 y HU-09 no tienen pruebas**. HU-01 y HU-02 **sí las tienen**, en
+  `tests/Feature/Auth/RegistrationTest.php` (2) y `tests\Feature\Auth\AuthenticationTest.php`
+  (4): son las de Breeze y la tabla de cobertura de abajo las omitía.
+
+Lo que sigue siendo cierto es que **esas pruebas no assertan los criterios de las historias**:
+`RegistrationTest` registraba un usuario pero no comprobaba que el correo sea único, que la
+contraseña exija 8 caracteres ni que el rol quede en `Cliente`. Justamente por eso el bug del
+punto 8 pasó inadvertido: **el test de HU-01 existía y pasaba, y aun así HU-01 no se cumplía.**
+
+👉 **Resuelto el 4 de octubre:** los dos archivos se reescribieron y ahora assertan los
+criterios de las historias (14 y 22 tests). Ver el punto 8 arriba. Lo que queda de este
+bug es solo la frase de la auditoría: **el hueco real es HU-09**, que sigue sin pruebas.
+
+### ✅ Resultado de la auditoría contra las guías 4.0 a 4.3
+
+**16 de 16 historias cumplen** (el 4 de octubre, con el punto 8 cerrado). El proyecto está en
+buen estado; lo que falta es documental.
+
+| Guía | Requisito | Estado verificado |
+|---|---|---|
+| 4.0 | Tablero público "Gestión - ImportaChina", 5 columnas | ⬜ externo al repo |
+| 4.0 | ≥4 historias: 1 Admin, 1 Vendedor, 2 Cliente | ✅ hay 16 con el formato exacto |
+| 4.0 | ≥1 historia que dependa de la API | ✅ HU-05 y HU-09 |
+| 4.0 | 2 wireframes en Figma | ⬜ externo al repo |
+| 4.0 | Claves de la API solo en el servidor | ✅ `config/services.php`, todo por `env()` |
+| 4.1 §1 | 12-16 requerimientos funcionales + 4 no funcionales | ⬜ **no existe el documento** |
+| 4.1 §1 | Roles: Administrador, Vendedor, Cliente | ✅ son los 3 de `RoleSeeder` |
+| 4.1 §2 | 16 historias, ≥2 criterios, puntos 1/2/3/5/8, 45-55 pts | ✅ **52 pts**, ninguno >8 |
+| 4.1 §2 | Reparto Admin 4-5 / Vendedor 3 / Cliente 7-8 | ✅ 5 / 3 / 8, exacto |
+| 4.1 §3 | Sprint 1-4 con 10-12 / 13-15 / 13-15 / 8-10 pts | ✅ 12 / 15 / 15 / 10, exacto |
+| 4.1 §4 | 8-10 wireframes escritorio y móvil | ⬜ externo al repo |
+| 4.1 §5 | 11 tablas con esas columnas | ✅ **las 11 exactas**, ver abajo |
+| 4.1 §6 | Repo + `main` protegida + rama por historia + PR | ⬜ **todo en `master`, sin ramas ni PR** |
+| 4.1 §7 | Modelos con relaciones, controladores delgados, Form Requests | ✅ 11 modelos, 10 Form Requests |
+| 4.1 §8 | Servicio que firma, comando artisan, `api_sync_logs`, lotes 20-50 | ✅ implementado y probado |
+| 4.1 §9 | CSRF en todos los formularios | ✅ los 3 sin `@csrf` son GET de filtrado |
+| 4.1 §9 | `.env` nunca en el repositorio | ✅ en `.gitignore` y sin trackear |
+| 4.1 §9 | `APP_DEBUG=false` en producción | ✅ un 404 real **no filtra nada** |
+| 4.1 §9 | ≥1 prueba por historia, 12-16 total | ✅ **211** en total; HU-01 y HU-02 ya bien cubiertas, **HU-09 sin pruebas** |
+| 4.1 §10 | Publicar con dominio público y migraciones | ✅ Railway vivo, `/catalogo` 200 |
+| 4.1 §10 | `php artisan migrate --force` **y `optimize`** | 🟡 migraciones sí, `optimize` no |
+| 4.1 §11 | Ceremonias ágiles registradas | ⬜ no hay registro |
+| 4.2 | Tablero Trello con las 5 listas y reglas WIP | ⬜ externo, sin `docs/tablero.md` |
+| 4.2 | Medir tiempo de ciclo y rendimiento | ⬜ sin datos |
+| 4.3 | 16 historias con criterios y puntos | ✅ 52 pts en 4 sprints |
+
+**Lo que la auditoría confirmó como correcto y conviene no romper:**
+
+- **Las 11 tablas de §5 son exactamente las que pide la guía** (`roles`, `users`, `categories`,
+  `products`, `product_images`, `carts`, `cart_items`, `orders`, `order_items`, `payments`,
+  `api_sync_logs`). `roles` está **normalizado de verdad**: `users.role_id` es una FK, no un
+  string. `external_id` es `unique` y `order_items` guarda el precio al momento de la compra.
+- **El reparto de sprints coincide al punto** con la tabla de la guía. No hay que tocar nada.
+- **Responsive:** 20 de 21 vistas tienen clases `sm:/md:/lg:`.
+- **Rutas:** 42 de la app. La guía *sugiere* 20-30, es sugerencia y no requisito; con 42 rutas
+  GET/POST/PUT/DELETE de 7 módulos es lo normal.
 
 ### ⚠️ Corrección de la última sesión
 
@@ -26,8 +209,26 @@ verificó contra la suite. Un número en un `.md` no es evidencia; correr el tes
 
 El punto 4 decía "los tres controladores estaban vacíos". No era exacto: `UserController`
 y `CategoryController` estaban completos, pero **las seis vistas no existían**, y encima
-había un bug de rutas que entregaba modelos **vacíos** en las pantallas de editar.
+ había un bug de rutas que entregaba modelos **vacíos** en las pantallas de editar.
 Detalle en la sección del punto 4.
+
+### ⚠️ Tercera corrección: este archivo vuelve a mentir (3 de octubre, auditoría 4.0-4.3)
+
+La sección "Tests agregados en los puntos 1 a 4" afirmaba dos cosas falsas:
+
+1. `AccessControlTest` "30 tests" → son **26**.
+2. "HU-01, HU-02 y HU-09 no tienen pruebas" → HU-01 y HU-02 **sí**, en
+   `tests/Feature/Auth/`. La tabla **omitía 18 tests de Breeze** y por eso la cuenta
+   cuadtaba sobre papel y mal contra la suite.
+
+**Y el bug más grave está en la misma línea:** el test de HU-01 **existe, pasa, y HU-01
+sigue sin cumplirse**. Un test de Breeze que verifica "el usuario se registra" no verifica
+"el usuario queda con el rol Cliente". Son cosas distintas.
+
+**Lección (la misma de siempre, agora por tercera vez):** un test que se limita a comprobar
+que la pantalla responde 200 **no prueba el criterio de aceptación**. Hay que assertar el
+efecto: el `role_id`, el estado, el precio calculado. Y una tabla de cobertura hay que
+contarla con `php artisan test`, no de memoria.
 
 ---
 
@@ -71,6 +272,8 @@ Si se borran: `php artisan db:seed --class=DemoSalesSeeder`
 | 5 | HU-05 API real de AliExpress | ✅ **Hecho** — solo falta el App Key (trámite externo) |
 | 6 | HU-04 teléfono y dirección en perfil | ✅ **Hecho** |
 | 7 | Mejoras menores | 🟡 A medias — falta lo que dice abajo |
+| **8** | **Auditoría 4.0-4.3: HU-01 no asignaba el rol Cliente** | ✅ **Hecho** — corregido y cubierto con 30 tests |
+| **9** | **Idioma: pantallas de Breeze en inglés, sin `lang/`** | 🔴 **Pendiente — nuevo** |
 | — | **Publicar en Railway** | ✅ **Hecho** — https://importachina-production.up.railway.app |
 
 ---
@@ -526,9 +729,30 @@ Verificado que la vieja `password` ya no entra.
 
 ### Datos de demo
 
-`DemoSalesSeeder` **no** corre en el despliegue (a propósito: son 14 pedidos falsos), así
-que el reporte de ventas de HU-16 sale vacío en Railway. Para demostrarlo allí hay que
-correrlo a mano desde el panel de Railway o por SSH.
+Como la base de Railway arranca vacía, el catálogo no tenía productos y el reporte de
+ventas daba `0.00`: el sitio funcionaba pero se veía roto. `DemoSalesSeeder` ya generaba
+todo (8 productos, 14 pedidos con pagos repartidos en 30 días), así que se encadenó al
+arranque en el `Procfile`.
+
+**Antes no se podía**: el seeder creaba 14 pedidos cada vez que corría, y como corre en cada
+despliegue, tres arranques daban 42 pedidos y el reporte quedaría inflado. Por eso ahora
+arranca con un guard:
+
+```php
+if (Order::exists()) {
+    $this->command?->info('Ya hay pedidos cargados: no se generan ventas de demo.');
+    return;
+}
+```
+
+Verificado en producción: el primer despliegue logarithmó *"Ventas de demo generadas: 14
+pedidos"* y el redespliego *"Ya hay pedidos cargados"*, con las cifras del reporte idénticas
+antes y después.
+
+- Si se borran los pedidos a mano, el siguiente despliegue los vuelve a generar.
+- Un pedido real de un cliente también bloquea el seeder, así que los datos falsos nunca se
+  mezclan con los verdaderos (`test_no_toca_los_pedidos_que_ya_creo_un_cliente`).
+- Los precios que genera la factory no son de AliExpress: son los de `ProductFactory`.
 
 ### Utilidades
 
@@ -543,28 +767,127 @@ correrlo a mano desde el panel de Railway o por SSH.
 
 ---
 
+---
+
+# ⬜ PUNTO 9 — Las pantallas de Breeze están en inglés (nuevo, 4 de octubre)
+
+**Apareció al escribir los tests de HU-02**, cuando el test empezó a assertar el mensaje de
+error del login y la página salió con "Log in", "Remember me", "Forgot your password?".
+
+## Qué pasa
+
+**No existe la carpeta `lang/`.** El framework solo trae `en`
+(`vendor/laravel/framework/src/Illuminate/Translation/lang/` tiene un único directorio, `en`),
+así que con `APP_LOCALE=es` sin carpeta `es` **todo cae al inglés**.
+
+Las blades de Breeze usan claves literales en inglés, `__('Log in')`, `__('Email')`. Sin
+archivo de traducción, `__()` devuelve la clave tal cual → **inglés en pantalla**.
+
+Verificado en la consola:
+
+```
+php artisan tinker --execute="echo __('auth.failed');"
+→ These credentials do not match our records.
+```
+
+## Dónde se ve
+
+| Pantalla | Texto en inglés | Historia afectada |
+|---|---|---|
+| `/login` | Log in, Remember me, Forgot your password?, Email, Password | **HU-02** |
+| `/register` | Register, Confirm Password, Already registered? | **HU-01** |
+| `/forgot-password` | todo en inglés | HU-02 |
+| `/reset-password` | todo en inglés | HU-02 |
+| `/confirm-password` | todo en inglés | — |
+| `/verify-email` | todo en inglés | — |
+| `/profile` | Profile Information, Save, Delete Account, Current Password… | **HU-04** |
+| `/dashboard` | Dashboard, "You're logged in!" | — |
+| `layouts/navigation` | **Profile**, **Log Out** (el resto ya está en español) | — |
+
+**Las tres historias de criterio de aceptación de esta auditoría están en inglés justo en las
+pantallas donde el usuario se registra, entra y edita su perfil.** Es lo primero que ve
+alguien que abre el sitio.
+
+⚠️ Lo que **no** está afectado: los módulos propios (catálogo, carrito, pedidos, admin,
+vendedor) tienen el texto **escrito a mano en español**, sin `__()`. Y los 10 Form Requests
+del proyecto sí tienen `messages()` en español. Lo único que sale en inglés son los mensajes
+que **no** pasan por un Form Request propio: `auth.failed`, `validation.required`,
+`passwords.*`, la paginación y las claves de las blades de Breeze.
+
+## Por qué NO lo arreglé en el punto 8
+
+Porque es otro bug de comportamiento, no parte de HU-01, y meterse habría convertido el
+punto en dos cambios sin revisar. También cambia archivos que **no son de HU-01** (perfil,
+dashboard, navegación), así que merece su propio punto y su propia decisión.
+
+## Opciones
+
+| Opción | Qué implica | Riesgo |
+|---|---|---|
+| **A. `lang/es/` completo** | `php artisan lang:publish`, traducir `auth`, `validation`, `passwords` y `pagination`; y cambiar las claves de las blades de Breeze por claves reales (`__('Log in')` → `__('auth.login')`) | Bajo. Es lo estándar de Laravel. Lo más correcto. |
+| **B. Solo las blades** | Cambiar los `__('...')` de las 6 vistas de auth y las 4 de perfil por texto español sin `__()`. Los `auth.failed` y las validaciones seguirían en inglés | Medio. Quedan mensajes en inglés y se pierde la capacidad de traducir |
+| **C. Dejarlo así** | Nada | El sitio se ve a medio traducir en las pantallas de entrada. **Es lo que está hoy** |
+
+**Recomendación: A.** Es lo que un docente revisaría primero, y `lang/es/` también arregla
+los mensajes de validación que hoy salen en inglés.
+
+> Nota sobre el test de HU-02: el assert es `$follow->assertSee(__('auth.failed'))` y **no** un
+> literal en español, a propósito. El criterio dice "veo un **mensaje de error claro**", no
+> "veo esta frase": así el test sigue siendo válido si el idioma cambia y **no hay que
+> editarlo** cuando se traduzca. Verificaba que el mensaje se ve, nada más.
+
+---
+
 # ⬜ PUNTO 7 — Pendientes menores
 
-- [ ] **Tests faltantes:** HU-01, HU-02, HU-09 no tienen pruebas.
-      La guía 4.1 §9 pide 12-16 pruebas, una por historia. (HU-08 ya tiene: `ProductDetailTest`.)
+> **Corregido por la auditoría del 3 de octubre:** el ítem de tests tenía un error (HU-01 y
+> HU-02 sí tienen pruebas, aunque incompletas) y el de §10 estaba obsoleto (ya se publicó).
+> Leer las notas de arriba antes de tacklearlo.
+>
+> **Actualizado el 4 de octubre:** el ítem de tests ya no tiene lo de HU-01/HU-02 (hecho en
+> el punto 8). Queda **solo HU-09**.
+
+- [ ] **Tests faltantes:**
+      - **HU-09** (buscar y filtrar catálogo): **sin pruebas**. Es el **único hueco real** que
+        queda. `CatalogController@index` implementa la búsqueda por `title like` y el filtro
+        por `category.slug`, y `catalog/index.blade.php` tiene el formulario, pero ningún test
+        lo ejercita.
+      - ✅ **HU-01 y HU-02**: hechos en el punto 8 (14 y 22 tests). Ya no es un pendiente.
+      La guía 4.1 §9 pide 12-16 pruebas, una por historia; con 211 tests la cifra global se
+      cumple de sobra, el detalle por historia es lo que queda. (HU-08 ya tiene:
+      `ProductDetailTest`.)
 - [ ] **§1-2 de la guía 4.1:** no existe documento de requerimientos (12-16 funcionales
-      + 4 no funcionales). Se necesita para la nota.
+      + 4 no funcionales). Se necesita para la nota. **Es el pendiente documental más
+      grande**: la guía lo pide en la primera sección.
+      Lo no funcional ya está cumplido y se puede documentar con lo verificado: seguridad
+      (CSRF, `.env` fuera del repo, `APP_DEBUG=false`, claves por `env()`), rendimiento
+      (catálogo servido desde la base, no se consulta la API en cada visita), usabilidad
+      (Form Requests con mensajes en español, rutas con nombre) y responsive (20 de 21
+      vistas con `sm:/md:/lg:`).
+      ⚠️ Con el punto 9 resuelto, el no funcional de **usabilidad** mejora: hoy las pantallas
+      de login, registro y perfil están en inglés.
 - [ ] **§6 de la guía 4.1:** no hay rama por historia ni Pull Request.
-      Hoy todo está en `master` y **sin commitear** (`git status` muestra 95 archivos, casi
-      todo el proyecto). Guía 4.2 pide protected `main` y ramas tipo `us-07-carrito`.
-- [ ] **§10:** sin publicar. **Es lo que bloquea el deploy**: ver la sección
-      "Publicar en Railway" más arriba. `APP_DEBUG=true` en `.env` (en producción debe ser
-      `false`) y hay que commitear antes de que Railway vea el código.
+      Todo está en `master`. La guía pide proteger `main` y ramas tipo `us-07-carrito`.
+      ⚠️ Corrección: el texto viejo decía "sin commitear, 95 archivos" — **eso ya se
+      resolvió**, el proyecto está commiteado (10 commits) y `git status` solo muestra
+      `PENDIENTES.md` y las 4 guías sin trackear.
+- [x] **§10:** **hecho.** Publicado en Railway y verificado en vivo.
+- [ ] **§10, detalle menor:** el `Procfile` corre `migrate` pero **no `php artisan optimize`**,
+      que la guía pide explícitamente. railpack hace `config:cache` en el build, pero no
+      `route:cache` ni `view:cache`. Bajo impacto, pero es lo que pide la guía.
 - [ ] **§11:** sin registro de ceremonias ágiles (planificación, diaria, revisión, retrospectiva).
 - [ ] **4.2 / configuración:** el tablero Trello "Gestión - ImportaChina" y los wireframes
       de Figma son **externos al repo**. No hay ni un archivo que los respalde.
       Conviene dejar un `docs/tablero.md` con el estado de las 16 historias para la nota.
+      ✅ Con el punto 8 cerrado, las 16 historias están en Hecho (antes 15 y media).
 - [ ] **`resources/views/welcome.blade.php`** (82 KB) es el splash de Laravel, no se usa.
-- [ ] **`docs/` existe pero está desatendido.** Contiene
-      `16_historias_de_usuario_ImportaChina.txt`, `guia del proyecto.txt`,
-      `guias_paso_a_paso_Trello_y_Kanban.txt` y una copia de la guía 4.1 en `.html`.
-      Las guías originales también están en la raíz del repo: hay duplicados. Decidir
-      cuál es la fuente de verdad y borrar lo demás.
+- [ ] **`docs/` existe pero está desatendido, y las guías de la raíz no están commiteadas.**
+      Contiene `16_historias_de_usuario_ImportaChina.txt`, `guia del proyecto.txt`,
+      `guias_paso_a_paso_Trello_y_Kanban.txt`, `configuracion del proyecto, user y stories.txt`
+      y una copia de la guía 4.1 en `.html`.
+      Las 4 guías de la raíz (`4.0` a `4.3`) están **sin trackear** — ver "Bug 2" más arriba.
+      Decidir la fuente de verdad, **commitear 4.2 y 4.3** (solo existen en la raíz) y borrar
+      lo demás.
 
 ### Lo que exige `configuracion del proyecto, user y stories.txt`
 
@@ -615,7 +938,7 @@ la tienda sin iniciar sesión" hoy ya funciona.
 | `tests/Feature/SalesReportTest.php` | HU-16 completa + autorización | 7 |
 | `tests/Feature/SellerOrderTest.php` | HU-12, HU-13, HU-15 + filtros + hole de pago | 21 |
 | `tests/Feature/PurchaseFlowTest.php` | HU-10, HU-11, HU-14 + regresión de `authorize()` | 8 |
-| `tests/Feature/AccessControlTest.php` | regresión del RoleMiddleware + catálogo público | 30 |
+| `tests/Feature/AccessControlTest.php` | regresión del RoleMiddleware + catálogo público | 26 |
 | `tests/Feature/AdminUserManagementTest.php` | HU-03 + guard de autodesactivación | 14 |
 | `tests/Feature/AdminCategoryManagementTest.php` | HU-06 + slug único | 10 |
 | `tests/Feature/AdminProductManagementTest.php` | HU-07 + precio derivado | 14 |
@@ -623,10 +946,37 @@ la tienda sin iniciar sesión" hoy ya funciona.
 | `tests/Feature/ProductDetailTest.php` | HU-08 galería + stock | 6 |
 | `tests/Feature/AliExpressSyncTest.php` | HU-05 completa con `Http::fake()` | 27 |
 | `tests/Feature/ProfileContactInfoTest.php` | HU-04 teléfono/dirección + checkout | 11 |
+| **Subtotal de los puntos 1 a 6** | | **152** |
+| `tests/Feature/ProfileTest.php` | Breeze: editar nombre y email | 5 |
+| `tests/Feature/DemoSalesSeederTest.php` | el seeder de demo no pisa datos reales | 4 |
+| `tests/Feature/Auth/RegistrationTest.php` | **HU-01 completa** (reescrito en el punto 8) | **14** |
+| `tests/Feature/Auth/AuthenticationTest.php` | **HU-02 completa** (reescrito en el punto 8) | **22** |
+| `tests/Feature/Auth/PasswordUpdateTest.php` | Breeze | 2 |
+| `tests/Feature/Auth/PasswordResetTest.php` | Breeze | 4 |
+| `tests/Feature/Auth/PasswordConfirmationTest.php` | Breeze | 3 |
+| `tests/Feature/Auth/EmailVerificationTest.php` | Breeze | 3 |
+| `tests/Feature/ExampleTest.php` + `tests/Unit/ExampleTest.php` | los que trae Laravel | 2 |
+| **Subtotal de Breeze y demás** | | **59** |
 
-**Total: 177 passing (579 assertions).**
+**Total: 211 passing (691 assertions).** Verificado con `php artisan test` el 4 de octubre
+de 2026, después del punto 8. Antes eran 181 passing (590 assertions).
 
-**Los de `AccessControlTest` y `PurchaseFlowTest` son tests de regresión**:rello a fallar
+> `AccessControlTest` tiene **7 métodos** pero corre **26 tests**: tres llevan `@DataProvider`
+> (uno con 7 rutas de admin y 7 de vendedor) y se expanden. No confundir métodos con tests.
+> Es lo mismo que hace `AuthenticationTest` con `rutasPrivadas` (7 rutas × 2 tests).
+>
+> ✅ **Las pruebas de HU-01 y HU-02 ya no son las de Breeze**: se reescribieron en el punto 8
+> y assertan los criterios de las historias (el rol `Cliente`, correo único, mínimo de 8
+> caracteres, el mensaje de error visible y que las páginas privadas queden cerradas tras el
+> logout).
+>
+> 🚨 **HU-09 sigue sin pruebas:** nadie ejercita la búsqueda por palabra clave ni el filtro por
+> categoría de `CatalogController@index`. Es el único hueco real que queda.
+>
+> **Usa atributos `#[DataProvider]`, no `@dataProvider` en doc-comment** (como ya hace
+> `AccessControlTest`): PHPUnit 12 deprecó el doc-comment y avisa por cada método.
+
+**Los de `AccessControlTest` y `PurchaseFlowTest` son tests de regresión**: están para fallar
 si alguien vuelve a romper el middleware o el trait `AuthorizesRequests`.
 
 Factories que se rellenaron (estaban vacías, con cuerpo `//`):
@@ -643,16 +993,23 @@ Factories que se rellenaron (estaban vacías, con cuerpo `//`):
 ## Comandos útiles
 
 ```bash
-php artisan test                                     # debe dar 177 passing (579 assertions)
+php artisan test                                     # debe dar 211 passing (691 assertions)
 php artisan test --filter=SellerOrderTest            # HU-12/13/15
 php artisan test --filter=SalesReportTest           # solo HU-16
 php artisan test --filter=ProfileContactInfoTest     # HU-04 teléfono/dirección
 php artisan test --filter=AliExpressSyncTest        # HU-05 con Http::fake()
 php artisan test --filter=Admin                    # HU-03, HU-06, HU-07
+php artisan test --filter=RegistrationTest          # HU-01 (14)
+php artisan test --filter=AuthenticationTest        # HU-02 (22)
+php artisan test --filter=Auth                     # HU-01, HU-02 y el resto de Breeze
 php artisan route:list --path=admin                  # ver las 3 secciones del punto 4
 php artisan route:list --path=vendedor              # pedidos + pagos
 php artisan db:seed --class=DemoSalesSeeder         # recargar datos de demo
 php artisan migrate:fresh --seed                    # base de datos limpia
+
+# Ojo: --filter=<Clase> cuenta TESTS, no metodos. AccessControlTest tiene 7 metodos
+# y corre 26 tests porque tres llevan #[DataProvider]. AuthenticationTest tiene
+# 8 metodos y corre 22 tests por el mismo motivo.
 
 # Pint está instalado. Correrlo SOLO sobre los archivos tocados,
 # si no reformatea 20 archivos preexistentes y el diff se ensucia:
@@ -661,6 +1018,17 @@ php vendor\bin\pint app/.../X.php tests/...
 
 ## Checklist para retomar
 
+**Orden sugerido:** ya no queda ningún bug de comportamiento. Sigue por el **documento de
+requerimientos** (§1-2 de la guía 4.1), que es lo único grande que bloquea la nota, y
+decide si el **punto 9** (idioma) entra antes que el paperwork.
+
+- [x] **Punto 8 (el bug de HU-01):** hecho el 4 de octubre. `RegisteredUserController::store()`
+      ahora asigna `role_id` con `Role::firstOrCreate(['name' => 'Cliente'])->id` y `status`
+      explícito. `RegistrationTest` (14 tests) y `AuthenticationTest` (22) assertan los
+      criterios de HU-01 y HU-02, y se **verificó que fallan** commenting el arreglo.
+      Con `RefreshDatabase` los roles no se siembran: los tests lo hacen en `setUp()`.
+- [ ] **Bug 2:** commitear las guías `4.0`-`4.3` de la raíz. Hoy están sin trackear y
+      **4.2 y 4.3 no existen en ningún otro lado**: no están en GitHub.
 - [ ] **Punto 5 (HU-05):** el código ya está terminado y probado con `Http::fake()`.
       Solo falta rellenar `ALIEXPRESS_APP_KEY` / `ALIEXPRESS_APP_SECRET` cuando se apruebe
       la app en `developers.aliexpress.com` (el trámite tarda días), y correr
@@ -669,9 +1037,19 @@ php vendor\bin\pint app/.../X.php tests/...
       `CheckoutRequest` y la dirección del perfil como valor por defecto en el carrito.
 - [x] **Railway:** hecho y verificado en vivo. Plugin MySQL, 25 variables, dominio,
       migraciones en el `Procfile` y contraseñas cambiadas.
-- [ ] **Punto 7:** tests de HU-01, HU-02, HU-09; documento de requerimientos;
-      ramas por historia y Pull Requests.
-- [ ] **Punto 8 (decidir):** `resources/views/welcome.blade.php` (82 KB, splash de Laravel
-      sin usar) y los duplicados de `docs/` ya borrados de la raíz.
+- [x] **Auditoría 4.0-4.3:** hecha el 3 de octubre de 2026. Las 11 tablas y los 52 puntos
+      del backlog coinciden con la guía.
+- [ ] **Punto 9 (idioma):** las pantallas de Breeze están en inglés y no hay `lang/`.
+      Ver la sección de arriba. Abarca login, registro, perfil y dashboard — o sea HU-01,
+      HU-02 y HU-04.
+- [ ] **Punto 7, lo que bloquea la nota:**
+      - [ ] documento de requerimientos (§1-2 de la guía 4.1) — **lo más grande**
+      - [ ] tests de HU-09 (el único hueco real que queda)
+      - [ ] ramas por historia y Pull Requests (§6)
+      - [ ] registro de ceremonias ágiles (§11)
+      - [ ] `docs/tablero.md` respaldando el tablero Trello y los wireframes
+      - [ ] `php artisan optimize` en el `Procfile` (§10)
+- [ ] **Punto 10 (decidir):** `resources/views/welcome.blade.php` (82 KB, splash de Laravel
+      sin usar) y los duplicados de `docs/`.
 - [ ] **Pregunta para la docente:** confirmar si el "acceso como invitado" es el tablero
       Trello público o una cuarta persona en el sistema web. Ver la sección de arriba.
