@@ -101,6 +101,20 @@
                     </div>
                 </div>
 
+                <label class="flex items-start gap-2 text-sm">
+                    <input type="hidden" name="price_locked" value="0">
+                    <input type="checkbox" name="price_locked" value="1"
+                           @checked(old('price_locked', $product->price_locked))
+                           class="mt-1 rounded border-gray-300">
+                    <span>
+                        Fijar este precio (costo y margen).
+                        <span class="text-xs text-gray-500">
+                            Si esta marcado, la sincronizacion con AliExpress no lo modifica.
+                        </span>
+                    </span>
+                </label>
+                @error('price_locked') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
+
                 <label class="block text-sm max-w-xs">
                     <span class="block text-gray-600 mb-1">Stock <span class="text-red-600">*</span></span>
                     <input type="number" name="stock" min="0" required
@@ -115,17 +129,31 @@
 
                 <label class="block text-sm">
                     <span class="block text-gray-600 mb-1">URL de la imagen principal</span>
-                    <input type="url" name="image_url" maxlength="255"
-                           value="{{ old('image_url', $product->image_url) }}"
-                           class="w-full border-gray-300 rounded" placeholder="https://...">
+                    <div class="flex gap-2" x-data="{ url: @js(old('image_url', $product->image_url)) }">
+                        <input type="url" name="image_url" maxlength="255"
+                               x-ref="campo" x-model="url"
+                               value="{{ old('image_url', $product->image_url) }}"
+                               class="flex-1 border-gray-300 rounded" placeholder="https://...">
+                        <button type="button" x-show="url" @click="url = ''; $refs.campo.focus()"
+                                class="shrink-0 rounded border border-gray-300 px-3 text-sm text-gray-600 hover:bg-gray-100">
+                            Vaciar
+                        </button>
+                    </div>
                     @error('image_url') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
                 </label>
 
                 <label class="block text-sm">
                     <span class="block text-gray-600 mb-1">URL del producto en AliExpress</span>
-                    <input type="url" name="source_url" maxlength="255"
-                           value="{{ old('source_url', $product->source_url) }}"
-                           class="w-full border-gray-300 rounded" placeholder="https://...">
+                    <div class="flex gap-2" x-data="{ url: @js(old('source_url', $product->source_url)) }">
+                        <input type="url" name="source_url" maxlength="255"
+                               x-ref="campo" x-model="url"
+                               value="{{ old('source_url', $product->source_url) }}"
+                               class="flex-1 border-gray-300 rounded" placeholder="https://...">
+                        <button type="button" x-show="url" @click="url = ''; $refs.campo.focus()"
+                                class="shrink-0 rounded border border-gray-300 px-3 text-sm text-gray-600 hover:bg-gray-100">
+                            Vaciar
+                        </button>
+                    </div>
                     @error('source_url') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
                 </label>
 
