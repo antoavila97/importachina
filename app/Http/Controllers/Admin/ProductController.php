@@ -55,6 +55,7 @@ class ProductController extends Controller
 
         // HU-07: el precio de venta sale del costo y del margen, nunca del formulario.
         $product->syncSalePrice()->save();
+        $product->syncGallery($request->validated('images', []));
 
         return redirect()
             ->route('admin.products.index')
@@ -72,6 +73,7 @@ class ProductController extends Controller
     public function update(ProductRequest $request, Product $product): RedirectResponse
     {
         $product->fill($request->productData())->syncSalePrice()->save();
+        $product->syncGallery($request->validated('images', []));
 
         return redirect()
             ->route('admin.products.index')

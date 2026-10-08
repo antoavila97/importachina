@@ -26,26 +26,29 @@
 
     <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
         {{-- Galeria --}}
-        <div>
-            <div class="overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
-                <x-product-image
-                    :src="$cover"
-                    :alt="$product->title"
-                    class="aspect-[4/3] w-full object-cover"
-                />
+        <div x-data="{ activa: null }">
+            <div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
+                <img src="{{ $cover ?: asset('images/placeholder.svg') }}"
+                     :src="activa || @js($cover ?: asset('images/placeholder.svg'))"
+                     alt="{{ $product->title }}" loading="lazy" decoding="async"
+                     onerror="this.onerror=null;this.src='{{ asset('images/placeholder.svg') }}'"
+                     class="aspect-[4/3] w-full object-contain">
             </div>
 
             @if ($gallery->count() > 1)
                 <div class="mt-3 grid grid-cols-5 gap-2">
                     @foreach ($gallery as $imageUrl)
-                        <a href="{{ $imageUrl }}" target="_blank" rel="noopener noreferrer"
-                           class="overflow-hidden rounded-lg border border-gray-200 bg-gray-100 transition hover:border-indigo-400">
+                        <button type="button" @click="activa = @js($imageUrl)"
+                                :class="activa === @js($imageUrl)
+                                    ? 'border-indigo-500 ring-1 ring-indigo-400'
+                                    : 'border-gray-200 hover:border-indigo-400'"
+                                class="overflow-hidden rounded-lg border bg-gray-100 transition">
                             <x-product-image
                                 :src="$imageUrl"
                                 :alt="$product->title"
                                 class="aspect-square w-full object-cover"
                             />
-                        </a>
+                        </button>
                     @endforeach
                 </div>
             @endif

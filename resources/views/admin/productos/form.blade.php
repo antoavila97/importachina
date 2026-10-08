@@ -168,17 +168,41 @@
                     @error('external_id') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
                 </label>
 
-                @if ($isEdit && $product->images->isNotEmpty())
-                    <div>
-                        <p class="block text-gray-600 mb-2">Imagenes registradas</p>
-                        <div class="flex flex-wrap gap-2">
-                            @foreach ($product->images as $image)
-                                <img src="{{ $image->url }}" alt="{{ $product->title }}"
-                                     class="h-16 w-16 rounded object-cover border">
-                            @endforeach
-                        </div>
+                <div x-data="{
+                        imagenes: @js(old('images', $isEdit ? $product->images->pluck('url')->all() : [])),
+                        max: 12
+                     }">
+                    <div class="flex items-baseline justify-between mb-1">
+                        <span class="block text-gray-600">Imagenes adicionales (galeria)</span>
+                        <span class="text-xs text-gray-500" x-text="imagenes.length + ' / ' + max"></span>
                     </div>
-                @endif
+
+                    <div class="space-y-2">
+                        <template x-for="(imagen, indice) in imagenes" :key="indice">
+                            <div class="flex gap-2">
+                                <input type="url" name="images[]" maxlength="2000"
+                                       x-model="imagenes[indice]"
+                                       class="flex-1 border-gray-300 rounded" placeholder="https://...">
+                                <button type="button" @click="imagenes.splice(indice, 1)"
+                                        class="shrink-0 rounded border border-gray-300 px-3 text-sm text-gray-600 hover:bg-gray-100">
+                                    Quitar
+                                </button>
+                            </div>
+                        </template>
+
+                        <p x-show="imagenes.length === 0" class="text-sm text-gray-500">
+                            Todavia no hay imagenes adicionales: pega aqui las fotos extra del producto
+                            (hasta 12), como las fichas de AliExpress.
+                        </p>
+                    </div>
+
+                    <button type="button" x-show="imagenes.length < max" @click="imagenes.push('')"
+                            class="mt-3 rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100">
+                        + Agregar imagen
+                    </button>
+
+                    @error('images') <span class="block mt-2 text-sm text-red-600">{{ $message }}</span> @enderror
+                </div>
             </div>
 
             <div class="bg-white rounded shadow p-6 space-y-4">

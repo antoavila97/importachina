@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\ImageUrl;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -46,6 +47,33 @@ class Product extends Model
     public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class)->orderBy('position');
+    }
+
+    /**
+     * HU-08: la galería del formulario reemplaza a la registrada, en el orden
+     * en que se cargaron (portada aparte, en image_url).
+     *
+     * @param  array<int, mixed>  $urls
+     */
+    public function syncGallery(array $urls): self
+    {
+        $urls = collect($urls)
+            ->filter(fn ($url) => is_string($url) && trim($url) !== '')
+            ->map(fn ($url) => ImageUrl::upgrade($url))
+            ->filter()
+            ->unique()
+            ->values();
+
+        ProductImage::where('product_id', $this->id)->delete();
+
+        foreach ($urls as $position => $url) {
+            $this->images()->create([
+                'url' => $url,
+                'position' => $position + 1,
+            ]);
+        }
+
+        return $this;
     }
 
     public function cartItems(): HasMany

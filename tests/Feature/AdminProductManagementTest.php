@@ -209,6 +209,75 @@ class AdminProductManagementTest extends TestCase
         $this->assertSame($url, $product->source_url);
     }
 
+    public function test_el_formulario_guarda_varias_imagenes_de_galeria_en_orden(): void
+    {
+        $this->actingAs($this->admin())
+            ->post(route('admin.products.store'), $this->payload([
+                'image_url' => 'https://ae-pic-a1.aliexpress-media.com/kf/abc123.jpg_220x220q75.jpg_.avif',
+                'images' => [
+                    'https://cdn.importachina.com/una.jpg',
+                    'https://cdn.importachina.com/dos.jpg',
+                    'https://cdn.importachina.com/tres.jpg',
+                ],
+            ]))
+            ->assertSessionHasNoErrors();
+
+        $product = Product::query()->where('external_id', 'AE-1001')->firstOrFail();
+
+        // La portada se guarda sin el sufijo que la achicaba a 220px.
+        $this->assertSame('https://ae-pic-a1.aliexpress-media.com/kf/abc123.jpg', $product->image_url);
+
+        $this->assertSame(
+            ['https://cdn.importachina.com/una.jpg', 'https://cdn.importachina.com/dos.jpg', 'https://cdn.importachina.com/tres.jpg'],
+            $product->images()->pluck('url')->all(),
+        );
+
+        $this->assertSame([1, 2, 3], $product->images()->pluck('position')->all());
+    }
+
+    public function test_al_editar_las_imagenes_de_la_galeria_se_reemplazan(): void
+    {
+        $product = Product::factory()->create();
+        $product->images()->createMany([
+            ['url' => 'https://cdn.importachina.com/vieja-1.jpg', 'position' => 1],
+            ['url' => 'https://cdn.importachina.com/vieja-2.jpg', 'position' => 2],
+        ]);
+
+        $this->actingAs($this->admin())
+            ->put(route('admin.products.update', $product), $this->payload([
+                'images' => ['https://cdn.importachina.com/nueva.jpg'],
+            ]))
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame(['https://cdn.importachina.com/nueva.jpg'], $product->images()->pluck('url')->all());
+
+        // Sin renglones en el formulario la galeria queda vacia.
+        $this->actingAs($this->admin())
+            ->put(route('admin.products.update', $product), $this->payload())
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame(0, $product->images()->count());
+    }
+
+    public function test_las_imagenes_de_la_galeria_se_validan_una_por_una(): void
+    {
+        $this->actingAs($this->admin())
+            ->post(route('admin.products.store'), $this->payload([
+                'images' => [
+                    'https://cdn.importachina.com/bien.jpg',
+                    'no-es-una-url',
+                ],
+            ]))
+            ->assertSessionHasErrors('images.1');
+
+        $this->assertStringContainsString(
+            'La imagen #2',
+            session('errors')->first('images.1'),
+        );
+
+        $this->assertSame(0, Product::query()->where('external_id', 'AE-1001')->count());
+    }
+
     public function test_no_se_repiten_identificadores_externos(): void
     {
         Product::factory()->create(['external_id' => 'AE-1001']);
