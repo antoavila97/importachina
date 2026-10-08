@@ -188,7 +188,7 @@ buen estado; lo que falta es documental.
 | 4.1 §10 | Publicar con dominio público y migraciones | ✅ Railway vivo, `/catalogo` 200 |
 | 4.1 §10 | `php artisan migrate --force` **y `optimize`** | 🟡 migraciones sí, `optimize` no |
 | 4.1 §11 | Ceremonias ágiles registradas | ⬜ no hay registro |
-| 4.2 | Tablero Trello con las 5 listas y reglas WIP | ⬜ externo, sin `docs/tablero.md` |
+| 4.2 | Tablero Trello con las 5 listas y reglas WIP | 🟡 `docs/tablero.md` hecho (8 oct); el Trello público sigue externo |
 | 4.2 | Medir tiempo de ciclo y rendimiento | ⬜ sin datos |
 | 4.3 | 16 historias con criterios y puntos | ✅ 52 pts en 4 sprints |
 
@@ -1092,8 +1092,9 @@ Lo que **si** tiene valor real:
       `route:cache` ni `view:cache`. Bajo impacto, pero es lo que pide la guía.
 - [ ] **§11:** sin registro de ceremonias ágiles (planificación, diaria, revisión, retrospectiva).
 - [ ] **4.2 / configuración:** el tablero Trello "Gestión - ImportaChina" y los wireframes
-      de Figma son **externos al repo**. No hay ni un archivo que los respalde.
-      Conviene dejar un `docs/tablero.md` con el estado de las 16 historias para la nota.
+      de Figma son **externos al repo**; no hay ni un archivo que los respalde salvo uno.
+      ✅ **`docs/tablero.md` hecho el 8 de octubre** — tabla con el estado de las 16
+      historias (rol, puntos, criterios y tests), pensada para la nota.
       ✅ Con el punto 8 cerrado, las 16 historias están en Hecho (antes 15 y media).
 - [ ] **`resources/views/welcome.blade.php`** (81 KB) es el splash de Laravel, no se usa.
       Es el único archivo grande que sobra en el repo.
@@ -1272,7 +1273,9 @@ decide si el **punto 9** (idioma) entra antes que el paperwork.
             rama + PR. Las 16 historias ya hechas no llevan ramas retrospectivas
             (decisión documentada arriba)
       - [ ] registro de ceremonias ágiles (§11)
-      - [ ] `docs/tablero.md` respaldando el tablero Trello y los wireframes
+      - [x] `docs/tablero.md` — **hecho el 8 de octubre**: tabla con las 16 HU, rol, puntos,
+            criterios, estado y los tests que cubren cada una. Quedan externos al repo el
+            tablero Trello público y los wireframes de Figma
       - [ ] `php artisan optimize` en el `Procfile` (§10)
 - [ ] **Limpieza (decidir):** `resources/views/welcome.blade.php` (82 KB, splash de Laravel
       sin usar) y los duplicados de `docs/`.
