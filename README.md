@@ -7,6 +7,32 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## ImportaChina — correr el proyecto en otra PC
+
+Requisitos: PHP 8.3+ con las extensiones de Laravel, Composer y Node.js.
+
+```bash
+git clone https://github.com/antoavila97/importachina.git
+cd importachina
+composer install
+npm install
+copy .env.example .env     # en Linux/macOS: cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+npm run build              # genera public/build (CSS/JS de Vite)
+php artisan serve          # http://127.0.0.1:8000
+```
+
+- **`.env` no está en el repo** (guarda contraseñas). El `.env.example` trae todo lo
+  necesario: `APP_LOCALE=es`, `ALIEXPRESS_DEMO=true` (modo demo de HU-05) y API de
+  AliExpress vacía. Si querés la misma configuración que otra máquina, copiá el `.env`
+  aparte, nunca lo subas.
+- **Base de datos:** por defecto SQLite (`database/database.sqlite`, Laravel lo crea si no
+  existe). Para MySQL cambiar `DB_CONNECTION` y `DB_*` en `.env` **antes** de migrar.
+- **Verificar la instalación:** `php artisan test` → **240 passing (822 assertions)**.
+- **Producción:** Railway despliega solo al hacer `git push` a `master`
+  (<https://importachina-production.up.railway.app>).
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
