@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\AliExpressApiException;
+use App\Support\ImageUrl;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Support\Facades\Date;
 
@@ -287,7 +288,7 @@ class AliExpressService
     private function firstImage($value): ?string
     {
         if (is_string($value)) {
-            return trim($value) !== '' ? trim($value) : null;
+            return ImageUrl::upgrade($value);
         }
 
         return $this->extractGallery($value)[0] ?? null;
@@ -310,7 +311,7 @@ class AliExpressService
         }
 
         return array_values(array_filter(array_map(
-            fn ($url) => is_string($url) ? trim($url) : null,
+            fn ($url) => is_string($url) ? ImageUrl::upgrade($url) : null,
             $value,
         )));
     }
