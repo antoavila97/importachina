@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Vendedor\OrderController as SellerOrderController;
@@ -17,9 +18,7 @@ Route::get('/', function () {
     return redirect()->route('catalog.index');
 })->name('home');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/catalogo', [CatalogController::class, 'index'])->name('catalog.index');
 Route::get('/catalogo/{product}', [CatalogController::class, 'show'])->name('catalog.show');
