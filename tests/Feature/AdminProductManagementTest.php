@@ -160,6 +160,37 @@ class AdminProductManagementTest extends TestCase
             ->assertSessionHasErrors('image_url');
     }
 
+    public function test_las_url_invalidas_se_explican_en_espanol_y_no_como_llave_cruda(): void
+    {
+        $this->actingAs($this->admin())
+            ->post(route('admin.products.store'), $this->payload([
+                'image_url' => 'no-es-una-url',
+                'source_url' => 'www.aliexpress.com/item/1.html',
+            ]))
+            ->assertSessionHasErrors(['image_url', 'source_url']);
+
+        $errors = session('errors');
+
+        $this->assertStringNotContainsString('validation.url', $errors->first('image_url'));
+        $this->assertStringNotContainsString('validation.url', $errors->first('source_url'));
+        $this->assertStringContainsString('https://', $errors->first('source_url'));
+    }
+
+    public function test_las_url_del_formulario_se_limpian_de_espacios_extremos(): void
+    {
+        $this->actingAs($this->admin())
+            ->post(route('admin.products.store'), $this->payload([
+                'image_url' => "  https://cdn.importachina.com/a.jpg \n",
+                'source_url' => ' https://www.aliexpress.com/item/1.html ',
+            ]))
+            ->assertSessionHasNoErrors();
+
+        $product = Product::query()->where('external_id', 'AE-1001')->firstOrFail();
+
+        $this->assertSame('https://cdn.importachina.com/a.jpg', $product->image_url);
+        $this->assertSame('https://www.aliexpress.com/item/1.html', $product->source_url);
+    }
+
     public function test_no_se_repiten_identificadores_externos(): void
     {
         Product::factory()->create(['external_id' => 'AE-1001']);
