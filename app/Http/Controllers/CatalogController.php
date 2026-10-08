@@ -22,7 +22,8 @@ class CatalogController extends Controller
             });
         }
 
-        $products = $query->paginate(12);
+        // withQueryString: sin eso, al pasar a la pagina 2 se pierden q y category.
+        $products = $query->paginate(12)->withQueryString();
         $categories = Category::orderBy('name')->get();
 
         return view('catalog.index', compact('products', 'categories'));

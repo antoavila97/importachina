@@ -146,6 +146,22 @@ class CatalogPageTest extends TestCase
             ->assertSee('Mostrando 13 a 14 de 14 productos');
     }
 
+    public function test_el_filtro_se_conserva_al_pasar_a_la_pagina_2(): void
+    {
+        Product::factory()->count(14)->create(['title' => 'Auriculares inalambricos']);
+
+        $html = $this->get(route('catalog.index', ['q' => 'Auriculares', 'page' => 2]))
+            ->assertOk()
+            ->getContent();
+
+        // El buscador sigue lleno...
+        $this->assertStringContainsString('value="Auriculares"', $html);
+
+        // ...y los enlaces de paginacion repiten el filtro: si no, la pagina 2
+        // mostraria el catalogo entero.
+        $this->assertStringContainsString('q=Auriculares', $html);
+    }
+
     public function test_el_pie_de_pagina_y_el_menu_no_dependen_del_rol(): void
     {
         $html = $this->get(route('catalog.index'))->assertOk()->getContent();
