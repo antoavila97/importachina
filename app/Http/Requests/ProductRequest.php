@@ -15,6 +15,17 @@ class ProductRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        foreach (['image_url', 'source_url'] as $field) {
+            $value = $this->input($field);
+
+            if (is_string($value)) {
+                $this->merge([$field => trim($value)]);
+            }
+        }
+    }
+
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */
@@ -52,7 +63,8 @@ class ProductRequest extends FormRequest
             'title.required' => 'El producto necesita un título.',
             'cost_price.min' => 'El costo no puede ser negativo.',
             'margin_pct.max' => 'El margen no puede superar el 500%.',
-            'image_url.url' => 'La URL de la imagen no es válida.',
+            'image_url.url' => 'La URL de la imagen no es válida. Debe empezar con https://',
+            'source_url.url' => 'La URL del producto no es válida. Debe empezar con https://',
             'external_id.unique' => 'Ya existe un producto con ese identificador externo.',
         ];
     }
