@@ -130,7 +130,7 @@
                 <label class="block text-sm">
                     <span class="block text-gray-600 mb-1">URL de la imagen principal</span>
                     <div class="flex gap-2" x-data="{ url: @js(old('image_url', $product->image_url)) }">
-                        <input type="url" name="image_url" maxlength="255"
+                        <input type="url" name="image_url" maxlength="2000"
                                x-ref="campo" x-model="url"
                                value="{{ old('image_url', $product->image_url) }}"
                                class="flex-1 border-gray-300 rounded" placeholder="https://...">
@@ -145,7 +145,7 @@
                 <label class="block text-sm">
                     <span class="block text-gray-600 mb-1">URL del producto en AliExpress</span>
                     <div class="flex gap-2" x-data="{ url: @js(old('source_url', $product->source_url)) }">
-                        <input type="url" name="source_url" maxlength="255"
+                        <input type="url" name="source_url" maxlength="2000"
                                x-ref="campo" x-model="url"
                                value="{{ old('source_url', $product->source_url) }}"
                                class="flex-1 border-gray-300 rounded" placeholder="https://...">

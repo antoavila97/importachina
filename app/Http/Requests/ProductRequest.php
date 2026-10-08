@@ -42,8 +42,8 @@ class ProductRequest extends FormRequest
             'margin_pct' => ['required', 'numeric', 'min:0', 'max:500'],
             'price_locked' => ['nullable', 'boolean'],
             'stock' => ['required', 'integer', 'min:0'],
-            'image_url' => ['nullable', 'url', 'max:255'],
-            'source_url' => ['nullable', 'url', 'max:255'],
+            'image_url' => ['nullable', 'url', 'max:2000'],
+            'source_url' => ['nullable', 'url', 'max:2000'],
             'active' => ['required', 'boolean'],
             'external_id' => [
                 'nullable',
@@ -65,6 +65,8 @@ class ProductRequest extends FormRequest
             'margin_pct.max' => 'El margen no puede superar el 500%.',
             'image_url.url' => 'La URL de la imagen no es válida. Debe empezar con https://',
             'source_url.url' => 'La URL del producto no es válida. Debe empezar con https://',
+            'image_url.max' => 'La URL de la imagen es demasiado larga (máximo 2000 caracteres).',
+            'source_url.max' => 'La URL del producto es demasiado larga (máximo 2000 caracteres).',
             'external_id.unique' => 'Ya existe un producto con ese identificador externo.',
         ];
     }

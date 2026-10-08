@@ -191,6 +191,24 @@ class AdminProductManagementTest extends TestCase
         $this->assertSame('https://www.aliexpress.com/item/1.html', $product->source_url);
     }
 
+    public function test_acepta_las_urls_largas_con_parametros_de_rastreo_de_aliexpress(): void
+    {
+        $url = 'https://es.aliexpress.com/item/1005013012966529.html?spm=a2g0o.productlist.main.7.102d7a4cAgJcB2'
+            .'&algo_pvid=f9530a10-d6b7-466a-9439-4013190a7b68&pdp_ext_f=%7B%22order%22%3A%22176%22%2C'
+            .'%22spu_best_type%22%3A%22price%22%2C%22eval%22%3A%221%22%2C%22fromPage%22%3A%22search%22%7D'
+            .'&utparam-url=scene%3Asearch%7Cquery_from%3A%7Cx_object_id%3A1005013012966529%7C_p_origin_prod%3A';
+
+        $this->assertGreaterThan(255, strlen($url));
+
+        $this->actingAs($this->admin())
+            ->post(route('admin.products.store'), $this->payload(['source_url' => $url]))
+            ->assertSessionHasNoErrors();
+
+        $product = Product::query()->where('external_id', 'AE-1001')->firstOrFail();
+
+        $this->assertSame($url, $product->source_url);
+    }
+
     public function test_no_se_repiten_identificadores_externos(): void
     {
         Product::factory()->create(['external_id' => 'AE-1001']);
