@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Support\ImageUrl;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -23,6 +24,27 @@ class ProductRequest extends FormRequest
             if (is_string($value)) {
                 $this->merge([$field => trim($value)]);
             }
+        }
+
+        // La portada y la galeria se guardan en su version original: el sufijo
+        // de transformacion de AliExpress solo achica la imagen.
+        $cover = $this->input('image_url');
+
+        if (is_string($cover) && $cover !== '') {
+            $this->merge(['image_url' => ImageUrl::upgrade($cover) ?? $cover]);
+        }
+
+        $images = $this->input('images');
+
+        if (is_array($images)) {
+            $images = array_values(array_filter(array_map(
+                fn ($url) => is_string($url) ? trim($url) : null,
+                $images,
+            )));
+
+            $this->merge([
+                'images' => array_map(fn ($url) => ImageUrl::upgrade($url) ?? $url, $images),
+            ]);
         }
     }
 
@@ -44,6 +66,9 @@ class ProductRequest extends FormRequest
             'stock' => ['required', 'integer', 'min:0'],
             'image_url' => ['nullable', 'url', 'max:2000'],
             'source_url' => ['nullable', 'url', 'max:2000'],
+            // HU-08: hasta 12 fotos adicionales, como las fichas de AliExpress.
+            'images' => ['nullable', 'array', 'max:12'],
+            'images.*' => ['required', 'string', 'url', 'max:2000'],
             'active' => ['required', 'boolean'],
             'external_id' => [
                 'nullable',
@@ -59,7 +84,7 @@ class ProductRequest extends FormRequest
      */
     public function messages(): array
     {
-        return [
+        $messages = [
             'title.required' => 'El producto necesita un título.',
             'cost_price.min' => 'El costo no puede ser negativo.',
             'margin_pct.max' => 'El margen no puede superar el 500%.',
@@ -68,7 +93,20 @@ class ProductRequest extends FormRequest
             'image_url.max' => 'La URL de la imagen es demasiado larga (máximo 2000 caracteres).',
             'source_url.max' => 'La URL del producto es demasiado larga (máximo 2000 caracteres).',
             'external_id.unique' => 'Ya existe un producto con ese identificador externo.',
+            'images.array' => 'Las imágenes deben enviarse como una lista.',
+            'images.max' => 'Un producto puede tener hasta :max imágenes.',
         ];
+
+        // Cada renglón de la galería se explica por su número.
+        foreach (array_keys((array) $this->input('images', [])) as $index) {
+            $number = ((int) $index) + 1;
+
+            $messages["images.{$index}.required"] = "La imagen #{$number} está vacía.";
+            $messages["images.{$index}.url"] = "La imagen #{$number} no es válida. Debe empezar con https://";
+            $messages["images.{$index}.max"] = "La imagen #{$number} es demasiado larga (máximo 2000 caracteres).";
+        }
+
+        return $messages;
     }
 
     /**
