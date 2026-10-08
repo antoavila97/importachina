@@ -1054,15 +1054,16 @@ facil:
 | "tablas de historias" | Una rama de git por historia de usuario | Guida 4.1 `6` | No hecho |
 | Tablas de la base de datos | El modelo de datos: `roles`, `users`, `products`... | Guia 4.1 `5` | **Hecho** |
 
-Estado real del repo al 4 de octubre:
+Estado del repo al 4 de octubre → **corregido el 8 de octubre**:
 
-| Lo que pide la guia | Estado |
+| Lo que pide la guia | Estado (8 de octubre) |
 |---|---|
-| Proteger `main` | No. Ni siquiera existe `main`: todo esta en `master` |
-| Una rama por historia (`us-07-carrito`) | No. Hay **0 ramas** |
-| Pull Request por historia | No. Hay **0 PRs** |
+| Proteger `main` | ✅ **Hecho.** No existe `main`, asi que se protegio **`master`**: `enforce_admins` (ni el dueño hace push directo), PR obligatorio, sin force push, sin borrado de rama |
+| Una rama por historia (`us-07-carrito`) | ❌ **0 ramas de historia.** Los primeros 18 commits estan todos en `master`; de ahi en adelante el trabajo entra por rama |
+| Pull Request por historia | ❌ **0 PRs historicos.** El primer PR real es el de esta rama, que abre el proceso |
 
-Hay **16 commits, todos en `master`**. Los mensajes son descriptivos y estan bien
+Hay **18 commits, todos en `master`** (verificado el 8 de octubre). Los mensajes son
+descriptivos y estan bien
 (`feat: aplicacion web...`, `fix: asignar rol Cliente...`), pero la separacion por
 historia que pide la guia no existe.
 
@@ -1073,12 +1074,17 @@ historial lo nota.
 
 Lo que **si** tiene valor real:
 
-- [ ] **Proteger `master` en GitHub** (reglas de proteccion: prohibido el push directo).
-      Es configuracion de 2 minutos y se ve en serio. **Es lo unico de este
-      pendiente que conviene hacer ya.**
-- [ ] **Adoptar rama + PR por historia desde el proximo trabajo**, empezando por el
-      documento de requerimientos y la pregunta del "acceso como invitado". Ahi el
-      proceso es genuino, no retrospectivo.
+- [x] **Proteger `master` en GitHub** (reglas de proteccion: PR obligatorio, prohibido el
+      push directo, sin force push). **Hecho el 8 de octubre** con
+      `gh api PUT /repos/antoavila97/importachina/branches/master/protection`
+      (`enforce_admins=true`, `required_approving_review_count=0`, `allow_force_pushes=false`,
+      `allow_deletions=false`). El `0` de aprobaciones es a proposito: es un proyecto de una
+      persona y poner 1 aprobacion dejaria el PR sin poder mergearse.
+- [x] **Adoptar rama + PR por historia desde el proximo trabajo.** **Empezado el 8 de
+      octubre** con este mismo cambio: rama `docs/pendientes-y-proteccion-de-master` y su PR
+      a `master`. El proximo en entrar por ese camino es el **documento de requerimientos
+      (§1-2)** y la pregunta del "acceso como invitado". Ahi el proceso es genuino, no
+      retrospectivo.
 
 - [x] **§10:** **hecho.** Publicado en Railway y verificado en vivo.
 - [ ] **§10, detalle menor:** el `Procfile` corre `migrate` pero **no `php artisan optimize`**,
@@ -1091,13 +1097,12 @@ Lo que **si** tiene valor real:
       ✅ Con el punto 8 cerrado, las 16 historias están en Hecho (antes 15 y media).
 - [ ] **`resources/views/welcome.blade.php`** (81 KB) es el splash de Laravel, no se usa.
       Es el único archivo grande que sobra en el repo.
-- [ ] **`docs/` existe pero está desatendido, y las guías de la raíz no están commiteadas.**
-      Contiene `16_historias_de_usuario_ImportaChina.txt`, `guia del proyecto.txt`,
-      `guias_paso_a_paso_Trello_y_Kanban.txt`, `configuracion del proyecto, user y stories.txt`
-      y una copia de la guía 4.1 en `.html`.
-      Las 4 guías de la raíz (`4.0` a `4.3`) están **sin trackear** — ver "Bug 2" más arriba.
-      Decidir la fuente de verdad, **commitear 4.2 y 4.3** (solo existen en la raíz) y borrar
-      lo demás.
+- [ ] **`docs/` existe pero está desatendido.** Contiene `16_historias_de_usuario_ImportaChina.txt`,
+      `guia del proyecto.txt`, `guias_paso_a_paso_Trello_y_Kanban.txt`,
+      `configuracion del proyecto, user y stories.txt` y una copia de la guía 4.1 en `.html`.
+      ✅ **8 de octubre:** las 4 guías de la raíz (`4.0` a `4.3`) **ya están commiteadas**
+      (commit `49686aa`), así que el "commitear 4.2 y 4.3" quedó hecho; ahora queda decidir
+      la fuente de verdad (`docs/` vs. raíz) y borrar la duplicada.
 
 ### Lo que exige `configuracion del proyecto, user y stories.txt`
 
@@ -1262,7 +1267,10 @@ decide si el **punto 9** (idioma) entra antes que el paperwork.
 - [ ] **Punto 7, lo que bloquea la nota:**
       - [ ] documento de requerimientos (§1-2 de la guía 4.1) — **lo más grande**
       - [x] tests de HU-09 — hechos en el punto 10 (`CatalogPageTest`, 10 tests)
-      - [ ] ramas por historia y Pull Requests (§6)
+      - [x] ramas por historia y Pull Requests (§6) — **proceso adoptado el 8 de octubre**:
+            `master` protegido (PR obligatorio, sin push directo) y este cambio entró por
+            rama + PR. Las 16 historias ya hechas no llevan ramas retrospectivas
+            (decisión documentada arriba)
       - [ ] registro de ceremonias ágiles (§11)
       - [ ] `docs/tablero.md` respaldando el tablero Trello y los wireframes
       - [ ] `php artisan optimize` en el `Procfile` (§10)
