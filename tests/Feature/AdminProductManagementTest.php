@@ -108,6 +108,39 @@ class AdminProductManagementTest extends TestCase
         $this->assertSame('130.00', $product->sale_price, 'El administrador no puede escribir el precio de venta.');
     }
 
+    public function test_el_administrador_puede_fijar_el_precio_para_que_la_sincronizacion_no_lo_cambie(): void
+    {
+        $this->actingAs($this->admin())
+            ->post(route('admin.products.store'), $this->payload(['price_locked' => '1']))
+            ->assertRedirect(route('admin.products.index'))
+            ->assertSessionHas('success');
+
+        $fijado = Product::where('external_id', 'AE-1001')->first();
+
+        $this->assertNotNull($fijado);
+        $this->assertTrue($fijado->price_locked);
+
+        // Sin marcar la casilla el precio sigue siendo actualizable por la API.
+        $this->actingAs($this->admin())
+            ->post(route('admin.products.store'), $this->payload(['external_id' => 'AE-1002']));
+
+        $this->assertFalse(Product::where('external_id', 'AE-1002')->first()->price_locked);
+    }
+
+    public function test_se_puede_desfijar_el_precio_al_editar(): void
+    {
+        $product = Product::factory()->create(['external_id' => 'AE-77', 'price_locked' => true]);
+
+        $this->actingAs($this->admin())
+            ->put(route('admin.products.update', $product), $this->payload([
+                'external_id' => 'AE-77',
+                'price_locked' => '0',
+            ]))
+            ->assertSessionHasNoErrors();
+
+        $this->assertFalse($product->fresh()->price_locked);
+    }
+
     public function test_el_formulario_valida_titulo_costo_margen_y_stock(): void
     {
         $this->actingAs($this->admin())
@@ -163,7 +196,8 @@ class AdminProductManagementTest extends TestCase
             ->get(route('admin.products.edit', $product))
             ->assertOk()
             ->assertSee('Editar producto')
-            ->assertSee('Titulo viejo');
+            ->assertSee('Titulo viejo')
+            ->assertSee('Vaciar');
 
         $this->actingAs($this->admin())
             ->put(route('admin.products.update', $product), $this->payload([
