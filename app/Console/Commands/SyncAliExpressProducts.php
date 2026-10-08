@@ -156,18 +156,25 @@ class SyncAliExpressProducts extends Command
             $product = Product::firstOrNew(['external_id' => $externalId]);
             $existed = $product->exists;
 
-            $product->fill([
+            // Si el administrador fijo el precio, el costo y el margen quedan como
+            // estan: la API solo renueva el resto de la ficha.
+            $data = [
                 'category_id' => $category?->id,
                 'title' => $item['title'],
                 'description' => $item['description'] ?: null,
-                'cost_price' => $item['cost_price'],
-                'margin_pct' => (float) config('services.aliexpress.margin_pct', 30),
                 'stock' => $existed ? $product->stock : 100,
                 'image_url' => $item['image_url'] ?? null,
                 'source_url' => $item['source_url'] ?? null,
                 'active' => true,
                 'synced_at' => now(),
-            ]);
+            ];
+
+            if (! $existed || ! $product->price_locked) {
+                $data['cost_price'] = $item['cost_price'];
+                $data['margin_pct'] = (float) config('services.aliexpress.margin_pct', 30);
+            }
+
+            $product->fill($data);
 
             // HU-07: el precio de venta sale del modelo, no de una formula duplicada.
             $product->syncSalePrice()->save();

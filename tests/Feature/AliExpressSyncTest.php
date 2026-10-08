@@ -305,6 +305,37 @@ class AliExpressSyncTest extends TestCase
         $this->assertTrue($product->active, 'Un producto reactivado por la API vuelve al catalogo.');
     }
 
+    public function test_el_precio_fijado_por_el_administrador_no_lo_pisa_la_sincronizacion(): void
+    {
+        $this->fakeApi(20);
+
+        $this->artisan('app:sync-aliexpress-products', ['--limit' => 20])->assertSuccessful();
+
+        $fijado = Product::firstWhere('external_id', '330000000000');
+        $libre = Product::firstWhere('external_id', '330000000001');
+
+        // El administrador le pone su propio precio al primero y deja el segundo comun.
+        $fijado->update(['cost_price' => 50, 'margin_pct' => 20, 'price_locked' => true]);
+        $libre->update(['cost_price' => 50, 'margin_pct' => 20]);
+
+        // Segunda corrida: la API vuelve con el precio de siempre.
+        $this->fakeApi(20);
+
+        $this->artisan('app:sync-aliexpress-products', ['--limit' => 20])->assertSuccessful();
+
+        $fijado->refresh();
+        $libre->refresh();
+
+        $this->assertTrue($fijado->price_locked);
+        $this->assertSame('50.00', $fijado->cost_price, 'El precio fijado no debe cambiar.');
+        $this->assertSame('20.00', $fijado->margin_pct, 'El margen fijado no debe cambiar.');
+        $this->assertSame('60.00', $fijado->sale_price);
+
+        $this->assertSame('19.99', $libre->cost_price, 'Sin fijar, el costo sigue a AliExpress.');
+        $this->assertSame('30.00', $libre->margin_pct, 'Sin fijar, el margen vuelve al de la configuracion.');
+        $this->assertSame('25.99', $libre->sale_price);
+    }
+
     public function test_cada_corrida_queda_registrada_con_su_resultado(): void
     {
         $this->fakeApi(20);

@@ -29,6 +29,7 @@ class ProductRequest extends FormRequest
             'cost_price' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
             // HU-07: se define el margen, no el precio de venta.
             'margin_pct' => ['required', 'numeric', 'min:0', 'max:500'],
+            'price_locked' => ['nullable', 'boolean'],
             'stock' => ['required', 'integer', 'min:0'],
             'image_url' => ['nullable', 'url', 'max:255'],
             'source_url' => ['nullable', 'url', 'max:255'],
@@ -67,6 +68,7 @@ class ProductRequest extends FormRequest
         $data['external_id'] = $data['external_id'] ?? null;
         $data['cost_price'] = round((float) $data['cost_price'], 2);
         $data['margin_pct'] = round((float) $data['margin_pct'], 2);
+        $data['price_locked'] = $this->boolean('price_locked');
         $data['stock'] = (int) $data['stock'];
         $data['active'] = $this->boolean('active');
 

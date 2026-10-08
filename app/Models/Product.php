@@ -21,6 +21,7 @@ class Product extends Model
         'cost_price',
         'margin_pct',
         'sale_price',
+        'price_locked',
         'stock',
         'image_url',
         'source_url',
@@ -30,6 +31,7 @@ class Product extends Model
 
     protected $casts = [
         'active' => 'boolean',
+        'price_locked' => 'boolean',
         'synced_at' => 'datetime',
         'cost_price' => 'decimal:2',
         'margin_pct' => 'decimal:2',
