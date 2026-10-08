@@ -18,7 +18,7 @@ class ApiSyncController extends Controller
 
         return view('admin.api-sync.index', [
             'logs' => $logs,
-            'isConfigured' => $api->isConfigured(),
+            'mode' => $api->mode(),
         ]);
     }
 

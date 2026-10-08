@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Guía de desarrollo: ImportaChina con Laravel, PHP y MySQL</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#FBF9F5;--bg2:#F4EFE6;--wine:#6B1D2F;--wine-s:#F1E2E5;--gold:#F4B400;--ink:#2B2B2B;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*:before,*:after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Montserrat,Inter,"Segoe UI",Arial,sans-serif;line-height:1.6;font-size:16px}
+header{background:var(--wine);color:#fff;padding:36px 20px 30px}
+header>div,main{max-width:900px;margin:0 auto}
+header h1{margin:0 0 8px;font-size:clamp(24px,4.5vw,40px);line-height:1.15;font-weight:800}
+header p{margin:0;max-width:62ch}
+.band{display:inline-block;background:var(--gold);color:var(--ink);font-weight:600;padding:6px 14px;margin-top:16px;font-size:14px}
+main{padding:24px 20px 60px}
+section{margin-top:34px}
+h2{display:flex;gap:12px;align-items:center;margin:0 0 10px;color:var(--wine);font-size:clamp(19px,2.8vw,26px);line-height:1.2;font-weight:800}
+h2 i{flex:none;width:36px;height:36px;border-radius:50%;background:var(--gold);color:var(--wine);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:16px}
+p{margin:8px 0;max-width:75ch}
+ul{padding-left:20px;margin:8px 0}li{margin:3px 0}
+.tip{background:var(--wine-s);border-left:5px solid var(--gold);padding:12px 16px;border-radius:0 6px 6px 0;margin:12px 0}
+.tip b{color:var(--wine)}
+.tw{overflow-x:auto;margin:12px 0;border:1px solid var(--wine);border-radius:6px;background:#fff}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th{background:var(--wine);color:#fff;text-align:left;padding:8px 10px}
+td{padding:8px 10px;border-top:1px solid #e4d9c8;vertical-align:top}
+tr:nth-child(even) td{background:var(--bg2)}
+code,pre{font-family:Consolas,Menlo,monospace;font-size:13px}
+pre{background:#2B2B2B;color:#F4EFE6;padding:12px 14px;border-radius:6px;overflow-x:auto;margin:10px 0}
+code{background:var(--bg2);padding:1px 5px;border-radius:3px}pre code{background:none;padding:0}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+.kpi div{background:#fff;border:2px solid var(--wine);border-radius:6px;padding:10px 12px}
+.kpi b{display:block;font-size:24px;color:var(--wine);line-height:1.1}.kpi span{font-size:13px}
+@media print{header{background:#fff;color:var(--wine)}}
+</style>
+</head>
+<body>
+<header><div>
+<h1>Guía de desarrollo del sistema web ImportaChina</h1>
+<p>Paso a paso con Laravel, PHP y MySQL bajo metodología ágil, con cifras sugeridas en cada etapa. Son referencias para equipos de 1 a 2 estudiantes; el docente puede ajustarlas.</p>
+<span class="band">Duración sugerida: Sprint 0 + 4 sprints de 2 semanas</span>
+</div></header>
+<main>
+
+<div class="kpi" aria-label="Resumen de cifras sugeridas">
+<div><b>16</b><span>historias de usuario</span></div>
+<div><b>5</b><span>sprints (0 al 4)</span></div>
+<div><b>11</b><span>tablas en MySQL</span></div>
+<div><b>~50</b><span>puntos de historia</span></div>
+<div><b>8–10</b><span>pantallas con wireframe</span></div>
+</div>
+
+<section><h2><i>1</i>Definir alcance y requerimientos</h2>
+<p>Describe el producto en una frase: una tienda web que vende productos importados de China y obtiene su catálogo de la API de AliExpress. Separa lo que entra en la versión mínima (MVP) de lo que queda para después.</p>
+<ul><li><b>Roles:</b> Administrador, Vendedor y Cliente.</li><li><b>Módulos:</b> autenticación, catálogo y API, carrito, pedidos, pagos y reportes.</li></ul>
+<div class="tip"><b>Sugerencia:</b> entre 12 y 16 requerimientos funcionales y 4 no funcionales (seguridad, rendimiento, usabilidad, diseño responsive). Si el listado pasa de 20, recorta: es un proyecto académico.</div></section>
+
+<section><h2><i>2</i>Escribir el Product Backlog</h2>
+<p>Convierte cada requerimiento en una historia de usuario con el formato <i>Como [rol], quiero [acción], para [beneficio]</i> y al menos 2 criterios de aceptación.</p>
+<div class="tw"><table><tr><th>Rol</th><th>Historias</th><th>Ejemplos</th></tr>
+<tr><td>Administrador</td><td>4–5</td><td>Gestionar usuarios y roles; sincronizar productos desde la API; definir margen de ganancia; ver reportes.</td></tr>
+<tr><td>Vendedor</td><td>3</td><td>Revisar pedidos; cambiar estado del pedido; registrar el pago.</td></tr>
+<tr><td>Cliente</td><td>7–8</td><td>Registrarse e iniciar sesión; buscar y filtrar productos; ver detalle; usar carrito; confirmar compra; ver historial.</td></tr></table></div>
+<div class="tip"><b>Sugerencia:</b> 16 historias en total. Estímalas en puntos con la escala 1, 2, 3, 5, 8; ninguna historia debe pasar de 8 (si pasa, divídela). Total esperado: 45 a 55 puntos.</div></section>
+
+<section><h2><i>3</i>Planificar los sprints</h2>
+<div class="tw"><table><tr><th>Sprint</th><th>Objetivo</th><th>Historias</th><th>Puntos</th></tr>
+<tr><td>0</td><td>Preparación: tableros, repositorio, Laravel instalado, wireframes y diseño de la base de datos.</td><td>—</td><td>—</td></tr>
+<tr><td>1</td><td>Autenticación y roles.</td><td>4</td><td>10–12</td></tr>
+<tr><td>2</td><td>Catálogo y consumo de la API.</td><td>5</td><td>13–15</td></tr>
+<tr><td>3</td><td>Carrito, pedidos y pagos.</td><td>4</td><td>13–15</td></tr>
+<tr><td>4</td><td>Reportes, pruebas finales y publicación.</td><td>3</td><td>8–10</td></tr></table></div>
+<div class="tip"><b>Sugerencia:</b> comprométete con unos 12 puntos por sprint la primera vez y ajusta con la velocidad real. Si el curso es más corto, usa sprints de 1 semana y reduce a 12 historias.</div></section>
+
+<section><h2><i>4</i>Diseñar los wireframes</h2>
+<p>Un wireframe en Figma por cada pantalla clave, en versión escritorio y móvil.</p>
+<div class="tip"><b>Sugerencia:</b> de 8 a 10 pantallas: inicio y catálogo, detalle de producto, carrito, checkout, registro e inicio de sesión, panel de pedidos, administración de productos y panel de reportes.</div></section>
+
+<section><h2><i>5</i>Diseñar la base de datos en MySQL</h2>
+<p>Modela primero en papel o en un diagrama entidad-relación y luego crea una migración de Laravel por tabla. Además de estas 11, Laravel crea sus tablas de sistema (sesiones, caché, trabajos); no cuentan.</p>
+<div class="tw"><table><tr><th>Tabla</th><th>Campos principales</th><th>Relación</th></tr>
+<tr><td>roles</td><td>id, name</td><td>1 rol tiene N usuarios</td></tr>
+<tr><td>users</td><td>id, name, email, password, role_id, status</td><td>pertenece a roles</td></tr>
+<tr><td>categories</td><td>id, name, slug, external_category_id</td><td>1 categoría tiene N productos</td></tr>
+<tr><td>products</td><td>id, category_id, external_id, title, description, cost_price, margin_pct, sale_price, stock, image_url, source_url, active, synced_at</td><td>pertenece a categories</td></tr>
+<tr><td>product_images</td><td>id, product_id, url, position</td><td>pertenece a products</td></tr>
+<tr><td>carts</td><td>id, user_id, status</td><td>pertenece a users</td></tr>
+<tr><td>cart_items</td><td>id, cart_id, product_id, quantity</td><td>une carts con products</td></tr>
+<tr><td>orders</td><td>id, user_id, total, status, shipping_address, created_at</td><td>pertenece a users</td></tr>
+<tr><td>order_items</td><td>id, order_id, product_id, quantity, unit_price</td><td>une orders con products</td></tr>
+<tr><td>payments</td><td>id, order_id, method, amount, status, paid_at</td><td>pertenece a orders</td></tr>
+<tr><td>api_sync_logs</td><td>id, user_id, items_imported, status, message, created_at</td><td>registra cada sincronización</td></tr></table></div>
+<div class="tip"><b>Sugerencia:</b> entre 10 y 12 tablas es un buen rango. Guarda el <code>external_id</code> del producto de la API para no duplicarlo, y guarda en <code>order_items</code> el precio al momento de la compra, porque el precio del catálogo puede cambiar.</div></section>
+
+<section><h2><i>6</i>Preparar el proyecto en Laravel</h2>
+<pre><code>composer create-project laravel/laravel importachina
+cd importachina
+# configura DB_DATABASE, DB_USERNAME y DB_PASSWORD en .env
+php artisan migrate
+php artisan serve</code></pre>
+<p>Crea el repositorio en GitHub, sube el proyecto y protege la rama <code>main</code>. Trabaja una rama por historia (por ejemplo <code>us-07-carrito</code>) y únela con un Pull Request.</p>
+<div class="tip"><b>Sugerencia:</b> usa un paquete de autenticación oficial de Laravel (como Breeze) para no escribir el inicio de sesión a mano, y dedica ese tiempo a las historias propias del negocio.</div></section>
+
+<section><h2><i>7</i>Construir con arquitectura MVC</h2>
+<ul><li><b>Modelos:</b> uno por tabla, con sus relaciones Eloquent (<code>hasMany</code>, <code>belongsTo</code>).</li><li><b>Controladores:</b> uno por módulo, delgados.</li><li><b>Vistas Blade:</b> un layout base y componentes reutilizables.</li><li><b>Form Requests:</b> la validación va aquí, no en el controlador.</li></ul>
+<div class="tip"><b>Sugerencia:</b> unos 10 modelos, 8 a 10 controladores y 20 a 30 rutas. Protege las rutas por rol con un middleware o con Policies.</div></section>
+
+<section><h2><i>8</i>Integrar la API de AliExpress</h2>
+<p>Crea una clase de servicio, por ejemplo <code>AliExpressService</code>, que firme la petición y llame al método <code>aliexpress.affiliate.product.query</code>. Las claves van en <code>.env</code> y se leen desde <code>config/services.php</code>.</p>
+<pre><code>ALIEXPRESS_APP_KEY=tu_app_key
+ALIEXPRESS_APP_SECRET=tu_app_secret
+ALIEXPRESS_TRACKING_ID=tu_tracking_id</code></pre>
+<ul><li>Importa los productos a la tabla <code>products</code> mediante un comando Artisan que el administrador también pueda lanzar desde el panel.</li><li>Registra cada ejecución en <code>api_sync_logs</code>.</li></ul>
+<div class="tip"><b>Sugerencia:</b> no consultes la API en cada visita del cliente. Importa en lotes de 20 a 50 productos por sincronización y sirve el catálogo desde tu propia base de datos. Así la tienda sigue funcionando si la API falla. Necesitas el registro gratuito en developers.aliexpress.com con antelación, porque la aprobación puede tardar unos días.</div></section>
+
+<section><h2><i>9</i>Seguridad y pruebas</h2>
+<ul><li>Eloquent usa sentencias preparadas, lo que previene la inyección SQL; evita concatenar SQL a mano.</li><li>Mantén el token CSRF (<code>@csrf</code>) en todos los formularios y valida cada entrada.</li><li>Nunca subas <code>.env</code> al repositorio.</li></ul>
+<div class="tip"><b>Sugerencia:</b> al menos una prueba de funcionalidad por historia (<code>php artisan test</code>), unas 12 a 16 en total, más una prueba manual del flujo completo de compra antes de cada revisión de sprint.</div></section>
+
+<section><h2><i>10</i>Publicar el sistema</h2>
+<ul><li>Elige un hosting con PHP 8.2 o superior y MySQL.</li><li>Configura el <code>.env</code> de producción con <code>APP_DEBUG=false</code>.</li><li>Ejecuta <code>php artisan migrate --force</code> y <code>php artisan optimize</code>.</li><li>Apunta el dominio a la carpeta <code>public</code>.</li></ul>
+<div class="tip"><b>Sugerencia:</b> haz una publicación de prueba al final del Sprint 2, no solo en el Sprint 4. Los errores de despliegue suelen aparecer tarde y cuestan caro.</div></section>
+
+<section><h2><i>11</i>Ceremonias ágiles y definición de terminado</h2>
+<div class="tw"><table><tr><th>Ceremonia</th><th>Cuándo</th><th>Duración sugerida</th></tr>
+<tr><td>Planificación del sprint</td><td>Inicio de cada sprint</td><td>45 a 60 min</td></tr>
+<tr><td>Reunión diaria</td><td>Cada clase o día de trabajo</td><td>10 min</td></tr>
+<tr><td>Revisión del sprint</td><td>Fin del sprint</td><td>30 min</td></tr>
+<tr><td>Retrospectiva</td><td>Después de la revisión</td><td>20 min</td></tr></table></div>
+<p>Una historia pasa a <b>Hecho</b> solo si cumple sus criterios de aceptación, tiene prueba, fue revisada con un Pull Request y funciona en el entorno de pruebas.</p>
+<div class="tip"><b>Sugerencia:</b> máximo 2 historias en <i>En Proceso</i> por persona (límite WIP). Termina lo empezado antes de tomar algo nuevo.</div></section>
+
+</main>
+</body>
+</html>

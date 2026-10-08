@@ -1,6 +1,10 @@
 # PENDIENTES — ImportaChina
 
-> **Última actualización:** 4 de octubre de 2026 — **punto 10 terminado**. El sitio en
+> **Última actualización:** 8 de octubre de 2026 — **punto 5 cerrado**. La API de AliExpress
+> **no se puede usar desde Bolivia** (pide verificar un número de celular y el país no figura
+> entre los soportados), así que en vez de dejar el capítulo a medias se agregó un
+> **modo demostración** que ejecuta el flujo completo de importación sin credenciales.
+> Antes de eso, el 4 de octubre, se cerró el **punto 10**. El sitio en
 > producción se veía **sin estilos y con todas las imágenes rotas**. La causa real era
 > **contenido mixto**: Laravel no confiaba en el proxy de Railway, así que generaba los
 > assets con `http://` en una página `https://` y el navegador los bloqueaba. El CSS
@@ -11,12 +15,18 @@
 > ("CategorÃ­a"), y el README tenía 5 caracteres dañados.
 >
 > **Al volver:** por el **documento de requerimientos** (§1-2 de la guía 4.1), que
-> sigue sin existir, y por el **punto 7**. La docente tiene una **pregunta abierta
-> sobre el "acceso como invitado"** (§ "Pregunta abierta"), que es lo único que
-> bloquea el despliegue público.
+> sigue sin existir, y por **preguntarle a la docente qué es el "acceso como invitado"**,
+> que es lo único que no se puede resolver leyendo las guías.
 >
-> Lo único del **punto 5** que falta es un trámite externo: las credenciales de AliExpress.
-> Estado verificado con `php artisan test`: **211 passing (691 assertions)**.
+> Con el punto 10 cerrado **ninguna historia de usuario está sin tests**.
+> Lo que queda es casi todo documental o decisiones de la docente. Ver "PUNTO 7".
+>
+> **El punto 5 quedó cerrado con bloqueo definitivo del proveedor:** la API de AliExpress
+> pide verificar un número de celular y **Bolivia no está entre los países soportados**,
+> así que las credenciales nunca se van a poder obtener. El código se conserva y ahora
+> tiene **modo demostración** (`ALIEXPRESS_DEMO=true`), que corre todo el flujo de
+> importación contra un catálogo local con la misma forma de la respuesta real.
+> Estado verificado con `php artisan test`: **240 passing (822 assertions)**.
 
 ### ✅ PUNTO 8 — HU-01 no asignaba el rol Cliente (HECHO)
 
@@ -146,8 +156,8 @@ contraseña exija 8 caracteres ni que el rol quede en `Cliente`. Justamente por 
 punto 8 pasó inadvertido: **el test de HU-01 existía y pasaba, y aun así HU-01 no se cumplía.**
 
 👉 **Resuelto el 4 de octubre:** los dos archivos se reescribieron y ahora assertan los
-criterios de las historias (14 y 22 tests). Ver el punto 8 arriba. Lo que queda de este
-bug es solo la frase de la auditoría: **el hueco real es HU-09**, que sigue sin pruebas.
+criterios de las historias (14 y 22 tests). Ver el punto 8 arriba. El hueco que quedaba,
+**HU-09**, se cerró en el punto 10 con `CatalogPageTest`.
 
 ### ✅ Resultado de la auditoría contra las guías 4.0 a 4.3
 
@@ -174,7 +184,7 @@ buen estado; lo que falta es documental.
 | 4.1 §9 | CSRF en todos los formularios | ✅ los 3 sin `@csrf` son GET de filtrado |
 | 4.1 §9 | `.env` nunca en el repositorio | ✅ en `.gitignore` y sin trackear |
 | 4.1 §9 | `APP_DEBUG=false` en producción | ✅ un 404 real **no filtra nada** |
-| 4.1 §9 | ≥1 prueba por historia, 12-16 total | ✅ **211** en total; HU-01 y HU-02 ya bien cubiertas, **HU-09 sin pruebas** |
+| 4.1 §9 | ≥1 prueba por historia, 12-16 total | ✅ **240** en total; las 16 historias cubiertas |
 | 4.1 §10 | Publicar con dominio público y migraciones | ✅ Railway vivo, `/catalogo` 200 |
 | 4.1 §10 | `php artisan migrate --force` **y `optimize`** | 🟡 migraciones sí, `optimize` no |
 | 4.1 §11 | Ceremonias ágiles registradas | ⬜ no hay registro |
@@ -273,11 +283,11 @@ Si se borran: `php artisan db:seed --class=DemoSalesSeeder`
 | 2 | HU-16 reporte de ventas | ✅ Hecho |
 | 3 | **HU-12 + HU-13 + HU-15 + rol Vendedor** | ✅ Hecho |
 | 4 | CRUD admin (HU-03, HU-06, HU-07) | ✅ **Hecho** |
-| 5 | HU-05 API real de AliExpress | ✅ **Hecho** — solo falta el App Key (trámite externo) |
+| 5 | HU-05 API real de AliExpress | ✅ **Hecho** — API **bloqueada para Bolivia** (celular + países); modo demostración activo |
 | 6 | HU-04 teléfono y dirección en perfil | ✅ **Hecho** |
 | 7 | Mejoras menores | 🟡 A medias — falta lo que dice abajo |
 | **8** | **Auditoría 4.0-4.3: HU-01 no asignaba el rol Cliente** | ✅ **Hecho** — corregido y cubierto con 30 tests |
-| **9** | **Idioma: pantallas de Breeze en inglés, sin `lang/`** | 🔴 **Pendiente — nuevo** |
+| **9** | **Idioma: 7 vistas de Breeze en inglés** (`lang/es/` ya existe y el login/registro están en español) | 🔴 **Pendiente — corregido el 8 oct** |
 | — | **Publicar en Railway** | ✅ **Hecho** — https://importachina-production.up.railway.app |
 
 ---
@@ -507,11 +517,12 @@ entrega un modelo vacío y el formulario se abre en blanco.
 
 ---
 
-# ✅ PUNTO 5 — HU-05: API real de AliExpress
+# ✅ PUNTO 5 — HU-05: API real de AliExpress (cerrado el 8 de octubre)
 
 ## Qué se implementó
 
-El cliente y el importador ya son reales. Solo falta poner las credenciales.
+El cliente y el importador ya son reales. **La API no se puede usar:** ver "Bloqueo
+definitivo" abajo. Mientras tanto corre el **modo demostración**.
 
 | Tarea | Estado |
 |---|---|
@@ -566,26 +577,46 @@ ALIEXPRESS_MARGIN_PCT=30
 necesitar credenciales reales: firma (md5, hmac, orden, vacíos), payload, timestamp,
 parseo, paginación, no duplicación, categorías, galería, errores de la API, paneles.
 
-```
-php artisan test --filter=AliExpressSyncTest    # 27 passing (99 assertions)
-```
-
-## Bloqueo externo (única cosa pendiente)
-
-**Hace falta registrarse en developers.aliexpress.com** para obtener App Key y App Secret.
-La aprobación puede tardar **varios días**. Sin esas dos variables no se puede hacer
-la llamada real; el panel muestra el aviso "Faltan las credenciales de la API" y el
-comando sale con código 1 sin tocar la base.
-
-Para probar de punta a punta apenas llegue la aprobación:
+Más **11 en `tests/Feature/AliExpressDemoModeTest.php`** para el modo demostración.
 
 ```
-php artisan app:sync-aliexpress-products --keyword="auriculares bluetooth" --limit=20
+php artisan test --filter=AliExpress     # 38 passing (AliExpressSyncTest + AliExpressDemoModeTest)
 ```
 
-Si la API responde `20002 Insufficient isv permissions`, la app existe pero todavía
-no tiene aprobado el método `aliexpress.affiliate.product.query`: eso se pide en el
-panel de la app, no es un bug del código.
+## 🔒 Bloqueo definitivo del proveedor (8 de octubre de 2026)
+
+**No es un trámite pendiente: es imposible desde Bolivia.**
+
+developers.aliexpress.com pide **verificar un número de celular** para crear la cuenta de
+desarrollador, y **Bolivia no está entre los países soportados** en la lista de verificación.
+Sin cuenta de desarrollador no hay App Key ni App Secret, y sin esas dos variables la
+llamada real nunca se puede hacer. No es algo que resuelva esperar: el requisito no cambia.
+
+**Lo que se decidió:** conservar el código (firma, importador, `api_sync_logs`, 27 tests) y
+agregar un **modo demostración** para poder mostrar HU-05 de punta a punta.
+
+| Qué | Cómo quedó |
+|---|---|
+| Variable | `ALIEXPRESS_DEMO=true` (en `.env` local y en Railway) |
+| Prioridad | **Credenciales > demo > sin configurar**: si algún día hay `app_key` y `app_secret`, manda la API real y el demo queda ignorado |
+| Catálogo | `app/Services/AliExpressDemoCatalog.php` — 24 productos con **la forma exacta de la respuesta de la API** (`product_id`, `sale_price`, `first_level_category_*`), paginados de 20 en 20 como el `page_size` real |
+| Flujo | Entra por `AliExpressService::queryProducts()` y pasa por el **mismo** `normalizeAll()`, el mismo `store()`, la misma no-duplicación y el mismo `syncSalePrice()`: el código que se prueba es el de verdad, solo cambia la fuente |
+| IDs | Prefijo `demo-`, así nunca colisionan con los productos reales |
+| Imágenes | `null` → el placeholder local del punto 10 (sin URLs rotas) |
+| Registro | El `ApiSyncLog` queda en `success` con **"(modo demostración)"** al final del mensaje |
+| Panel | Banner azul "Modo demostración" con el motivo (celular + Bolivia) y el botón **habilitado**; sin credenciales y sin demo sigue el aviso amarillo de siempre |
+| Tests | `phpunit.xml` fija `ALIEXPRESS_DEMO=false`, para que la suite siga probando el camino sin credenciales |
+
+**Cambio menor incluido:** `SyncProductsRequest::keyword()` rompía con
+`Undefined array key "keyword"` si el POST no traía esa clave (el formulario siempre la
+manda, pero un cliente que mande solo `limit` causaba un 500). Ahora usa `?? ''`.
+
+**Comandos:**
+
+```
+php artisan app:sync-aliexpress-products --limit=20   # en modo demo importa 20
+ALIEXPRESS_DEMO=false php artisan ...                 # con credenciales vacías: falla como antes
+```
 
 ---
 
@@ -668,7 +699,7 @@ Estado verificado con peticiones reales: `/catalogo` 200, login de los 3 usuario
 | Código commiteado | ✅ 6 commits en `master` (antes: 95 archivos sin commitear) |
 | Plugin MySQL | ✅ `mysql:9`, volumen `mysql-volume` (500 MB), db `railway` |
 | Dominio público | ✅ `importachina-production.up.railway.app` (antes el servicio no tenía ninguno) |
-| Variables del panel | ✅ 25 variables (ver abajo) |
+| Variables del panel | ✅ 26 variables (ver abajo; la 26.ª es `ALIEXPRESS_DEMO=true`, agregada el 8 oct) |
 | Migraciones + seed en cada deploy | ✅ en el `Procfile` |
 | Contraseñas de `password` | ✅ cambiadas por `ImportaChina#2026` |
 
@@ -773,50 +804,64 @@ antes y después.
 
 ---
 
-# ⬜ PUNTO 9 — Las pantallas de Breeze están en inglés (nuevo, 4 de octubre)
+# ⬜ PUNTO 9 — Pantallas de Breeze en inglés (nuevo 4 de octubre, **corregido el 8 de octubre**)
 
 **Apareció al escribir los tests de HU-02**, cuando el test empezó a assertar el mensaje de
 error del login y la página salió con "Log in", "Remember me", "Forgot your password?".
 
+> ⚠️ **Esta sección decía "no existe `lang/`" y ya no es cierto.** Se verificó el 8 de
+> octubre: `lang/es/` sí existe (commiteado en `ddfdc65`, 4 archivos Breeze: `auth`,
+> `validation`, `passwords`, `pagination`), `APP_LOCALE=es` está bien, el login y el registro
+> ya usan claves propias (`auth.login` → "Iniciar sesión") y la navegación está en español.
+> **HU-01, HU-02 y HU-04 se ven en español**; lo que quedó en inglés son otras 7 pantallas
+> (tabla de abajo).
+
 ## Qué pasa
 
-**No existe la carpeta `lang/`.** El framework solo trae `en`
-(`vendor/laravel/framework/src/Illuminate/Translation/lang/` tiene un único directorio, `en`),
-así que con `APP_LOCALE=es` sin carpeta `es` **todo cae al inglés**.
+Faltan **dos cosas**:
 
-Las blades de Breeze usan claves literales en inglés, `__('Log in')`, `__('Email')`. Sin
-archivo de traducción, `__()` devuelve la clave tal cual → **inglés en pantalla**.
+1. **`lang/es/` está incompleto.** Cubre los mensajes de framework (`auth`, `validation`,
+   `passwords`, `pagination`), que es lo que se ve en errores de login y validación.
+2. **Claves literales en inglés en 7 vistas.** Breeze escribe `__('Log in')`,
+   `__('Delete Account')`, `__("You're logged in!")`. Al no existir esa clave en ningún
+   archivo de traducción, `__()` devuelve el texto tal cual → **inglés en pantalla**.
 
-Verificado en la consola:
+Verificado en la consola (8 de octubre):
 
 ```
 php artisan tinker --execute="echo __('auth.failed');"
-→ These credentials do not match our records.
+→ Estas credenciales no coinciden con nuestros registros.   ✅ ya en español
+
+__('validation.required') → El campo :attribute es obligatorio.  ✅
+__('Log in')              → Log in                              ❌ clave sin traducir
 ```
 
 ## Dónde se ve
 
-| Pantalla | Texto en inglés | Historia afectada |
+| Pantalla | Estado (verificado el 8 de octubre) | Historia afectada |
 |---|---|---|
-| `/login` | Log in, Remember me, Forgot your password?, Email, Password | **HU-02** |
-| `/register` | Register, Confirm Password, Already registered? | **HU-01** |
-| `/forgot-password` | todo en inglés | HU-02 |
-| `/reset-password` | todo en inglés | HU-02 |
-| `/confirm-password` | todo en inglés | — |
-| `/verify-email` | todo en inglés | — |
-| `/profile` | Profile Information, Save, Delete Account, Current Password… | **HU-04** |
-| `/dashboard` | Dashboard, "You're logged in!" | — |
-| `layouts/navigation` | **Profile**, **Log Out** (el resto ya está en español) | — |
+| `/login` | ✅ en español (`auth.login`, `auth.remember_me`, `auth.forgot_password`) | **HU-02** |
+| `/register` | ✅ en español (`auth.register`, `auth.already_registered`) | **HU-01** |
+| `layouts/navigation` | ✅ en español ("Cerrar sesión", "Iniciar sesión", "Perfil") | — |
+| `profile/edit` | ✅ en español ("Mi perfil", "Guardar", "Guardado.") | **HU-04** |
+| `catalog/*`, `orders/*`, `admin/*`, `vendor/pagination` | ✅ escrito a mano en español | — |
+| `/welcome` | ❌ "Dashboard", "Log in" | — |
+| `/dashboard` | ❌ "You're logged in!" | — |
+| `/forgot-password` | ❌ todo el párrafo en inglés | HU-02 |
+| `/reset-password` | ❌ "Confirm Password" y demás | HU-02 |
+| `/confirm-password` | ❌ "This is a secure area…" | — |
+| `/verify-email` | ❌ párrafo en inglés y "Log Out" | — |
+| `/profile` (3 partials) | ❌ "Delete Account", "Update your account's…", "Your email address is unverified." | **HU-04** |
 
-**Las tres historias de criterio de aceptación de esta auditoría están en inglés justo en las
-pantallas donde el usuario se registra, entra y edita su perfil.** Es lo primero que ve
-alguien que abre el sitio.
+**Lo que falta** son 7 vistas: `welcome`, `dashboard`, `forgot-password`,
+`reset-password`, `confirm-password`, `verify-email` y los 3 partials de `profile`.
+Son pantallas secundarias, pero `profile` y `forgot/reset-password` sí tocan **HU-02** y
+**HU-04**.
 
 ⚠️ Lo que **no** está afectado: los módulos propios (catálogo, carrito, pedidos, admin,
-vendedor) tienen el texto **escrito a mano en español**, sin `__()`. Y los 10 Form Requests
-del proyecto sí tienen `messages()` en español. Lo único que sale en inglés son los mensajes
-que **no** pasan por un Form Request propio: `auth.failed`, `validation.required`,
-`passwords.*`, la paginación y las claves de las blades de Breeze.
+vendedor) tienen el texto **escrito a mano en español**, sin `__()`. Los 10 Form Requests
+tienen `messages()` en español. Y desde `ddfdc65` los mensajes que pasan por `lang/es`
+(`auth.failed`, `validation.*`, `passwords.*`, paginación) **ya salen en español**.
 
 ## Por qué NO lo arreglé en el punto 8
 
@@ -828,12 +873,12 @@ dashboard, navegación), así que merece su propio punto y su propia decisión.
 
 | Opción | Qué implica | Riesgo |
 |---|---|---|
-| **A. `lang/es/` completo** | `php artisan lang:publish`, traducir `auth`, `validation`, `passwords` y `pagination`; y cambiar las claves de las blades de Breeze por claves reales (`__('Log in')` → `__('auth.login')`) | Bajo. Es lo estándar de Laravel. Lo más correcto. |
-| **B. Solo las blades** | Cambiar los `__('...')` de las 6 vistas de auth y las 4 de perfil por texto español sin `__()`. Los `auth.failed` y las validaciones seguirían en inglés | Medio. Quedan mensajes en inglés y se pierde la capacidad de traducir |
-| **C. Dejarlo así** | Nada | El sitio se ve a medio traducir en las pantallas de entrada. **Es lo que está hoy** |
+| **A. Solo las 7 vistas que faltan** | Cambiar las claves literales de `welcome`, `dashboard`, `forgot-password`, `reset-password`, `confirm-password`, `verify-email` y los 3 partials de `profile` (por `__('perfil.x')` o texto directo). `lang/es/` de framework **ya está** | Bajo. Es lo que queda de la opción original A |
+| **B. Texto directo sin `__()`** | Mismas 7 vistas, pero sin claves de traducción | Bajo, pero no se puede cambiar de idioma después |
+| **C. Dejarlo así** | Nada | Esas 7 pantallas siguen en inglés. **Es lo que está hoy** |
 
-**Recomendación: A.** Es lo que un docente revisaría primero, y `lang/es/` también arregla
-los mensajes de validación que hoy salen en inglés.
+**Recomendación: A.** Es lo que un docente revisaría primero: el login, el registro, la
+navegación y los mensajes de validación ya están en español, solo faltan 7 vistas.
 
 > Nota sobre el test de HU-02: el assert es `$follow->assertSee(__('auth.failed'))` y **no** un
 > literal en español, a propósito. El criterio dice "veo un **mensaje de error claro**", no
@@ -967,32 +1012,74 @@ En el panel de Railway conviene confirmar:
 > Leer las notas de arriba antes de tacklearlo.
 >
 > **Actualizado el 4 de octubre:** el ítem de tests ya no tiene lo de HU-01/HU-02 (hecho en
-> el punto 8). Queda **solo HU-09**.
+> el punto 8). **HU-09 también quedó cubierto** en el punto 10 con `CatalogPageTest`.
+> **No queda ninguna historia sin tests.**
+>
+> ✅ **Actualizado el 4 de octubre (tarde):** con el punto 10 el checklist de este punto
+> quedó así: **ninguna historia sin tests**, y las tablas de la base de datos de la §5 ya
+> estaban hechas desde el principio. Lo que sigue pendiente son casi todos temas
+> documentales o decisiones que dependen de la docente.
 
-- [ ] **Tests faltantes:**
-      - **HU-09** (buscar y filtrar catálogo): **sin pruebas**. Es el **único hueco real** que
-        queda. `CatalogController@index` implementa la búsqueda por `title like` y el filtro
-        por `category.slug`, y `catalog/index.blade.php` tiene el formulario, pero ningún test
-        lo ejercita.
-      - ✅ **HU-01 y HU-02**: hechos en el punto 8 (14 y 22 tests). Ya no es un pendiente.
-      La guía 4.1 §9 pide 12-16 pruebas, una por historia; con 211 tests la cifra global se
-      cumple de sobra, el detalle por historia es lo que queda. (HU-08 ya tiene:
-      `ProductDetailTest`.)
+- [x] **Tests faltantes: ninguno.** Las 16 historias tienen pruebas.
+      - ✅ **HU-09** (buscar y filtrar catálogo): cubierto en el punto 10 por
+        `tests/Feature/CatalogPageTest.php` (búsqueda por texto, filtro por categoría,
+        estado vacío, paginación, badges de stock).
+      - ✅ **HU-01 y HU-02**: hechos en el punto 8 (14 y 22 tests).
+      La guía 4.1 §9 pide 12-16 pruebas, una por historia; con **240 tests** la cifra
+      global se cumple de sobra. (HU-08 tiene `ProductDetailTest`.)
 - [ ] **§1-2 de la guía 4.1:** no existe documento de requerimientos (12-16 funcionales
       + 4 no funcionales). Se necesita para la nota. **Es el pendiente documental más
       grande**: la guía lo pide en la primera sección.
       Lo no funcional ya está cumplido y se puede documentar con lo verificado: seguridad
       (CSRF, `.env` fuera del repo, `APP_DEBUG=false`, claves por `env()`), rendimiento
       (catálogo servido desde la base, no se consulta la API en cada visita), usabilidad
-      (Form Requests con mensajes en español, rutas con nombre) y responsive (20 de 21
-      vistas con `sm:/md:/lg:`).
-      ⚠️ Con el punto 9 resuelto, el no funcional de **usabilidad** mejora: hoy las pantallas
-      de login, registro y perfil están en inglés.
-- [ ] **§6 de la guía 4.1:** no hay rama por historia ni Pull Request.
-      Todo está en `master`. La guía pide proteger `main` y ramas tipo `us-07-carrito`.
-      ⚠️ Corrección: el texto viejo decía "sin commitear, 95 archivos" — **eso ya se
-      resolvió**, el proyecto está commiteado (10 commits) y `git status` solo muestra
-      `PENDIENTES.md` y las 4 guías sin trackear.
+      (Form Requests con mensajes en español, rutas con nombre) y responsive.
+      ⬜ **Punto 9 pendiente:** `lang/es/` ya existe y login/registro/navegación están en
+      español; quedan **7 vistas** en inglés (`welcome`, `dashboard`, `verify-email`,
+      `forgot/reset/confirm-password` y los partials de perfil).
+      ✅ Con el punto 10 el responsive subió de 20 de 21 vistas a **todas**: la navegación
+      y el catálogo se rehicieron con `sm:/md:/lg:/xl:`.
+#### `6` de la guida 4.1: ramas por historia y Pull Requests
+
+Lo que pide la guia 4.1, `6`, textual:
+
+> "Crea el repositorio en GitHub, sube el proyecto y **protege la rama main**. Trabaja
+> **una rama por historia** (por ejemplo `us-07-carrito`) y unela con un **Pull Request**."
+
+**Aclaracion importante: no son tablas.** Hay dos cosas distintas y se confunden
+facil:
+
+| Lo que parece | Que es realmente | Donde esta | Estado |
+|---|---|---|---|
+| "tablas de historias" | Una rama de git por historia de usuario | Guida 4.1 `6` | No hecho |
+| Tablas de la base de datos | El modelo de datos: `roles`, `users`, `products`... | Guia 4.1 `5` | **Hecho** |
+
+Estado real del repo al 4 de octubre:
+
+| Lo que pide la guia | Estado |
+|---|---|
+| Proteger `main` | No. Ni siquiera existe `main`: todo esta en `master` |
+| Una rama por historia (`us-07-carrito`) | No. Hay **0 ramas** |
+| Pull Request por historia | No. Hay **0 PRs** |
+
+Hay **16 commits, todos en `master`**. Los mensajes son descriptivos y estan bien
+(`feat: aplicacion web...`, `fix: asignar rol Cliente...`), pero la separacion por
+historia que pide la guia no existe.
+
+**Decision tomada: NO se van a inventar ramas retrospectivas.** Crear 16 ramas
+despues, con commits que en realidad se desarrollaron juntos el mismo dia, se ve
+peor que no tenerlo: aparenta un proceso que no ocurrio. Un docente que revise el
+historial lo nota.
+
+Lo que **si** tiene valor real:
+
+- [ ] **Proteger `master` en GitHub** (reglas de proteccion: prohibido el push directo).
+      Es configuracion de 2 minutos y se ve en serio. **Es lo unico de este
+      pendiente que conviene hacer ya.**
+- [ ] **Adoptar rama + PR por historia desde el proximo trabajo**, empezando por el
+      documento de requerimientos y la pregunta del "acceso como invitado". Ahi el
+      proceso es genuino, no retrospectivo.
+
 - [x] **§10:** **hecho.** Publicado en Railway y verificado en vivo.
 - [ ] **§10, detalle menor:** el `Procfile` corre `migrate` pero **no `php artisan optimize`**,
       que la guía pide explícitamente. railpack hace `config:cache` en el build, pero no
@@ -1002,7 +1089,8 @@ En el panel de Railway conviene confirmar:
       de Figma son **externos al repo**. No hay ni un archivo que los respalde.
       Conviene dejar un `docs/tablero.md` con el estado de las 16 historias para la nota.
       ✅ Con el punto 8 cerrado, las 16 historias están en Hecho (antes 15 y media).
-- [ ] **`resources/views/welcome.blade.php`** (82 KB) es el splash de Laravel, no se usa.
+- [ ] **`resources/views/welcome.blade.php`** (81 KB) es el splash de Laravel, no se usa.
+      Es el único archivo grande que sobra en el repo.
 - [ ] **`docs/` existe pero está desatendido, y las guías de la raíz no están commiteadas.**
       Contiene `16_historias_de_usuario_ImportaChina.txt`, `guia del proyecto.txt`,
       `guias_paso_a_paso_Trello_y_Kanban.txt`, `configuracion del proyecto, user y stories.txt`
@@ -1067,8 +1155,9 @@ la tienda sin iniciar sesión" hoy ya funciona.
 | `tests/Feature/PaymentEditVoidTest.php` | editar y anular pagos | 8 |
 | `tests/Feature/ProductDetailTest.php` | HU-08 galería + stock | 6 |
 | `tests/Feature/AliExpressSyncTest.php` | HU-05 completa con `Http::fake()` | 27 |
+| `tests/Feature/AliExpressDemoModeTest.php` | **HU-05 en modo demostración** (8 de octubre) | **11** |
 | `tests/Feature/ProfileContactInfoTest.php` | HU-04 teléfono/dirección + checkout | 11 |
-| **Subtotal de los puntos 1 a 6** | | **152** |
+| **Subtotal de los puntos 1 a 6** | | **163** |
 | `tests/Feature/ProfileTest.php` | Breeze: editar nombre y email | 5 |
 | `tests/Feature/DemoSalesSeederTest.php` | el seeder de demo no pisa datos reales | 4 |
 | `tests/Feature/Auth/RegistrationTest.php` | **HU-01 completa** (reescrito en el punto 8) | **14** |
@@ -1078,10 +1167,14 @@ la tienda sin iniciar sesión" hoy ya funciona.
 | `tests/Feature/Auth/PasswordConfirmationTest.php` | Breeze | 3 |
 | `tests/Feature/Auth/EmailVerificationTest.php` | Breeze | 3 |
 | `tests/Feature/ExampleTest.php` + `tests/Unit/ExampleTest.php` | los que trae Laravel | 2 |
-| **Subtotal de Breeze y demás** | | **59** |
+| `tests/Feature/CatalogPageTest.php` | **HU-09** + regresión del contenido mixto (punto 10) | 10 |
+| `tests/Feature/DemoCatalogSpanishMigrationTest.php` | la migración de catálogo a español | 5 |
+| `tests/Feature/DemoImageCleanupTest.php` | limpieza de imágenes de servicios apagados | 3 |
+| **Subtotal de Breeze y demás** | | **77** |
 
-**Total: 211 passing (691 assertions).** Verificado con `php artisan test` el 4 de octubre
-de 2026, después del punto 8. Antes eran 181 passing (590 assertions).
+**Total: 240 passing (822 assertions).** Verificado con `php artisan test` el 8 de octubre
+de 2026, después del modo demostración de HU-05. Antes de este cambio eran 229; el 4 de
+octubre, después del punto 8, 211 (691 assertions), y el punto de partida eran 181.
 
 > `AccessControlTest` tiene **7 métodos** pero corre **26 tests**: tres llevan `@DataProvider`
 > (uno con 7 rutas de admin y 7 de vendedor) y se expanden. No confundir métodos con tests.
@@ -1092,8 +1185,8 @@ de 2026, después del punto 8. Antes eran 181 passing (590 assertions).
 > caracteres, el mensaje de error visible y que las páginas privadas queden cerradas tras el
 > logout).
 >
-> 🚨 **HU-09 sigue sin pruebas:** nadie ejercita la búsqueda por palabra clave ni el filtro por
-> categoría de `CatalogController@index`. Es el único hueco real que queda.
+> ✅ **HU-09 ya tiene pruebas** (punto 10): `CatalogPageTest` cubre la búsqueda, el filtro
+> por categoría, el estado vacío y la paginación de `CatalogController@index`.
 >
 > **Usa atributos `#[DataProvider]`, no `@dataProvider` en doc-comment** (como ya hace
 > `AccessControlTest`): PHPUnit 12 deprecó el doc-comment y avisa por cada método.
@@ -1115,11 +1208,11 @@ Factories que se rellenaron (estaban vacías, con cuerpo `//`):
 ## Comandos útiles
 
 ```bash
-php artisan test                                     # debe dar 211 passing (691 assertions)
+php artisan test                                     # debe dar 240 passing (822 assertions)
 php artisan test --filter=SellerOrderTest            # HU-12/13/15
 php artisan test --filter=SalesReportTest           # solo HU-16
 php artisan test --filter=ProfileContactInfoTest     # HU-04 teléfono/dirección
-php artisan test --filter=AliExpressSyncTest        # HU-05 con Http::fake()
+php artisan test --filter=AliExpress                 # HU-05: API (Http::fake) + modo demo
 php artisan test --filter=Admin                    # HU-03, HU-06, HU-07
 php artisan test --filter=RegistrationTest          # HU-01 (14)
 php artisan test --filter=AuthenticationTest        # HU-02 (22)
@@ -1151,27 +1244,29 @@ decide si el **punto 9** (idioma) entra antes que el paperwork.
       Con `RefreshDatabase` los roles no se siembran: los tests lo hacen en `setUp()`.
 - [ ] **Bug 2:** commitear las guías `4.0`-`4.3` de la raíz. Hoy están sin trackear y
       **4.2 y 4.3 no existen en ningún otro lado**: no están en GitHub.
-- [ ] **Punto 5 (HU-05):** el código ya está terminado y probado con `Http::fake()`.
-      Solo falta rellenar `ALIEXPRESS_APP_KEY` / `ALIEXPRESS_APP_SECRET` cuando se apruebe
-      la app en `developers.aliexpress.com` (el trámite tarda días), y correr
-      `php artisan app:sync-aliexpress-products --limit=20` para confirmar contra la API real.
+- [x] **Punto 5 (HU-05):** **cerrado el 8 de octubre de 2026.** El código está terminado y
+      probado con `Http::fake()`, pero **las credenciales no se pueden conseguir**: la API
+      pide verificar un celular y Bolivia no está en la lista de países. Se agregó el
+      **modo demostración** (`ALIEXPRESS_DEMO=true`, activo en local y en Railway) con
+      11 tests propios. Ver "PUNTO 5" arriba.
 - [x] **Punto 6 (HU-04):** hecho. Migración `phone` / `address`, inputs en el perfil,
       `CheckoutRequest` y la dirección del perfil como valor por defecto en el carrito.
-- [x] **Railway:** hecho y verificado en vivo. Plugin MySQL, 25 variables, dominio,
-      migraciones en el `Procfile` y contraseñas cambiadas.
+- [x] **Railway:** hecho y verificado en vivo. Plugin MySQL, 26 variables (incluye
+      `ALIEXPRESS_DEMO=true`), dominio, migraciones en el `Procfile` y contraseñas cambiadas.
 - [x] **Auditoría 4.0-4.3:** hecha el 3 de octubre de 2026. Las 11 tablas y los 52 puntos
       del backlog coinciden con la guía.
-- [ ] **Punto 9 (idioma):** las pantallas de Breeze están en inglés y no hay `lang/`.
-      Ver la sección de arriba. Abarca login, registro, perfil y dashboard — o sea HU-01,
-      HU-02 y HU-04.
+- [ ] **Punto 9 (idioma):** quedan 7 vistas de Breeze en inglés. `lang/es/` ya existe
+      (commiteado) y el login, registro, navegación y validaciones **ya están en español**.
+      Ver la sección de arriba. Abarca `verify-email`, `forgot/reset/confirm-password`
+      (HU-02) y el perfil (HU-04).
 - [ ] **Punto 7, lo que bloquea la nota:**
       - [ ] documento de requerimientos (§1-2 de la guía 4.1) — **lo más grande**
-      - [ ] tests de HU-09 (el único hueco real que queda)
+      - [x] tests de HU-09 — hechos en el punto 10 (`CatalogPageTest`, 10 tests)
       - [ ] ramas por historia y Pull Requests (§6)
       - [ ] registro de ceremonias ágiles (§11)
       - [ ] `docs/tablero.md` respaldando el tablero Trello y los wireframes
       - [ ] `php artisan optimize` en el `Procfile` (§10)
-- [ ] **Punto 10 (decidir):** `resources/views/welcome.blade.php` (82 KB, splash de Laravel
+- [ ] **Limpieza (decidir):** `resources/views/welcome.blade.php` (82 KB, splash de Laravel
       sin usar) y los duplicados de `docs/`.
 - [ ] **Pregunta para la docente:** confirmar si el "acceso como invitado" es el tablero
       Trello público o una cuarta persona en el sistema web. Ver la sección de arriba.

@@ -38,6 +38,10 @@ class SyncAliExpressProducts extends Command
 
         $this->components->info("Sincronizando desde AliExpress: keyword \"{$keyword}\", hasta {$limit} producto(s).");
 
+        if ($api->isDemo()) {
+            $this->components->info('Modo demostración: se usa el catálogo local, porque la API real exige verificar un celular y Bolivia no está entre los países soportados.');
+        }
+
         try {
             $result = $this->import($api, $keyword, $limit, $pageSize);
         } catch (AliExpressApiException $e) {
@@ -48,7 +52,7 @@ class SyncAliExpressProducts extends Command
             return $this->logFailure("Fallo inesperado: {$e->getMessage()}");
         }
 
-        $this->logSuccess($result);
+        $this->logSuccess($result, $api->isDemo());
 
         $this->newLine();
         $this->line($this->summary($result));
@@ -255,13 +259,13 @@ class SyncAliExpressProducts extends Command
     /**
      * @param  array{imported: int, updated: int, skipped: int, processed: int, pages: int}  $result
      */
-    private function logSuccess(array $result): void
+    private function logSuccess(array $result, bool $demo = false): void
     {
         ApiSyncLog::create([
             'user_id' => auth()->id(),
             'items_imported' => $result['imported'] + $result['updated'],
             'status' => ApiSyncLog::STATUS_SUCCESS,
-            'message' => $this->summary($result),
+            'message' => $this->summary($result).($demo ? ' (modo demostración)' : ''),
         ]);
     }
 

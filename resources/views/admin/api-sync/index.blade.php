@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @use('App\Console\Commands\SyncAliExpressProducts')
+@use('App\Services\AliExpressService')
 
 @section('title', 'Sincronización API')
 
@@ -15,16 +16,30 @@
 
         <x-flash-messages />
 
-        @unless ($isConfigured)
+        @if ($mode === AliExpressService::MODE_DEMO)
+            <div class="bg-blue-100 border border-blue-400 text-blue-800 px-4 py-3 rounded mb-6">
+                <p class="font-semibold">Modo demostración</p>
+                <p class="text-sm mt-1">
+                    La API de AliExpress no está disponible en Bolivia: el registro exige
+                    verificar un número de celular y el país no figura entre los soportados.
+                    Por eso la sincronización corre contra un <strong>catálogo local</strong>
+                    con la misma forma de la respuesta real, y el flujo completo (lotes,
+                    no duplicación, precio de venta y registro de cada corrida) funciona igual.
+                    Si se cargan <code>ALIEXPRESS_APP_KEY</code> y <code>ALIEXPRESS_APP_SECRET</code>,
+                    manda la API real.
+                </p>
+            </div>
+        @elseif ($mode === AliExpressService::MODE_UNCONFIGURED)
             <div class="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded mb-6">
                 <p class="font-semibold">Faltan las credenciales de la API</p>
                 <p class="text-sm mt-1">
                     Cargá <code>ALIEXPRESS_APP_KEY</code> y <code>ALIEXPRESS_APP_SECRET</code> en el
-                    <code>.env</code> (se registran en developers.aliexpress.com) y volvé a sincronizar.
+                    <code>.env</code> (se registran en developers.aliexpress.com) o activá
+                    <code>ALIEXPRESS_DEMO=true</code> para sincronizar con el catálogo local.
                     Las claves se leen solo desde el servidor.
                 </p>
             </div>
-        @endunless
+        @endif
 
         <div class="bg-white rounded shadow p-6 mb-6">
             <form method="POST" action="{{ route('admin.api-sync.sync') }}" class="space-y-4">
@@ -51,7 +66,7 @@
                     </label>
                 </div>
 
-                <button type="submit" @disabled(! $isConfigured)
+                <button type="submit" @disabled($mode === AliExpressService::MODE_UNCONFIGURED)
                         class="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed">
                     Sincronizar productos
                 </button>

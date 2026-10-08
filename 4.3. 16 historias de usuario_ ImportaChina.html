@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>16 historias de usuario: ImportaChina</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#FBF9F5;--bg2:#F4EFE6;--wine:#6B1D2F;--wine-s:#F1E2E5;--gold:#F4B400;--ink:#2B2B2B;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*:before,*:after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Montserrat,Inter,"Segoe UI",Arial,sans-serif;line-height:1.55;font-size:16px}
+header{background:var(--wine);color:#fff;padding:32px 20px 24px}
+header>div,main{max-width:900px;margin:0 auto}
+header h1{margin:0 0 8px;font-size:clamp(24px,4.5vw,38px);line-height:1.15;font-weight:800}
+header p{margin:0;max-width:64ch}
+main{padding:10px 20px 60px}
+.tip{background:var(--wine-s);border-left:5px solid var(--gold);padding:10px 14px;border-radius:0 6px 6px 0;margin:18px 0;max-width:75ch;font-size:15px}
+.tip b{color:var(--wine)}
+h2{margin:34px 0 4px;color:var(--wine);font-size:clamp(19px,2.8vw,25px);font-weight:800;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.sub{margin:0 0 12px;font-size:14px}
+.card{background:#fff;border:2px solid var(--wine);border-radius:6px;padding:14px 16px;margin-top:12px}
+.top{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.id{font-weight:800;color:var(--wine)}
+.tag{font-size:12px;font-weight:600;padding:2px 10px;border-radius:12px;background:var(--gold)}
+.tag.Administrador{background:var(--wine);color:#fff}.tag.Vendedor{background:var(--wine-s);border:1px solid var(--wine)}
+.pts{margin-left:auto;font-weight:800;color:var(--wine)}
+.story{font-weight:600;margin:0 0 6px}
+.card ul{margin:4px 0 10px;padding-left:20px;font-size:14px}
+button{font:inherit;font-size:13px;font-weight:600;background:var(--wine);color:#fff;border:0;border-radius:4px;padding:7px 14px;cursor:pointer}
+button.alt{background:var(--gold);color:var(--ink)}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.ok{background:#2f6b3a!important;color:#fff!important}
+textarea{position:fixed;left:-9999px}
+@media print{button{display:none}}
+</style>
+</head>
+<body>
+<header><div>
+<h1>16 historias de usuario: ImportaChina</h1>
+<p>Listas para pegar en Trello, con criterios de aceptación y puntos. Distribuidas en 4 sprints: 52 puntos en total.</p>
+</div></header>
+<main>
+<div class="tip"><b>Cómo usarlas:</b> pulsa <i>Copiar historia</i> para llevar el título y los criterios a una tarjeta (el título en una línea, los criterios en la descripción). Para cargar un sprint completo de una vez, usa <i>Copiar títulos</i> y pega las líneas en la lista de Trello; según la versión, Trello ofrece crear una tarjeta por línea. El número entre corchetes son los puntos de historia.</div>
+<div id="app"></div>
+</main>
+<script>
+var S=[
+{n:1,t:"Autenticación y roles",h:[
+["HU-01","Cliente","registrarme con mi correo y una contraseña","poder comprar en la tienda",3,["El formulario valida correo único y contraseña de mínimo 8 caracteres.","Al registrarme, mi cuenta queda con el rol Cliente."]],
+["HU-02","Cliente","iniciar y cerrar sesión","acceder a mi cuenta de forma segura",2,["Con credenciales correctas entro a mi cuenta; con incorrectas veo un mensaje de error claro.","Al cerrar sesión no puedo volver a las páginas privadas."]],
+["HU-03","Administrador","gestionar usuarios y asignarles un rol (Administrador, Vendedor o Cliente)","controlar quién accede a cada función",5,["Puedo listar, crear, editar y desactivar usuarios.","Un Vendedor o Cliente no puede entrar al panel de administración."]],
+["HU-04","Cliente","editar mi perfil y mi dirección de envío","recibir mis pedidos en el lugar correcto",2,["Puedo cambiar mi nombre, teléfono y dirección.","Los cambios se guardan y se muestran al volver a entrar."]]]},
+{n:2,t:"Catálogo y consumo de la API",h:[
+["HU-05","Administrador","sincronizar productos desde la API de AliExpress","llenar el catálogo sin cargarlos uno por uno",5,["Al lanzar la sincronización se importan entre 20 y 50 productos con título, imagen y precio de costo.","Un producto ya importado no se duplica y cada sincronización queda registrada con su resultado."]],
+["HU-06","Administrador","crear, editar y eliminar categorías","mantener el catálogo organizado",2,["Cada categoría tiene nombre único.","No puedo eliminar una categoría que tenga productos asignados."]],
+["HU-07","Administrador","definir el margen de ganancia y ver el precio de venta de cada producto","que la tienda gane sobre el costo de importación",2,["El precio de venta se calcula a partir del costo y el margen.","Los cambios de margen se reflejan en el catálogo."]],
+["HU-08","Cliente","ver el catálogo y el detalle de cada producto","conocer lo que está disponible antes de comprar",3,["El catálogo muestra imagen, título y precio, con paginación.","El detalle muestra descripción, imágenes y el botón para agregar al carrito."]],
+["HU-09","Cliente","buscar productos por palabra clave y filtrarlos por categoría","encontrar lo que busco rápidamente",3,["La búsqueda devuelve productos cuyo título contiene la palabra.","Puedo combinar la búsqueda con una categoría y limpiar los filtros."]]]},
+{n:3,t:"Carrito, pedidos y pagos",h:[
+["HU-10","Cliente","agregar productos al carrito y modificar sus cantidades","preparar mi compra antes de pagar",5,["Puedo agregar, cambiar la cantidad y quitar productos.","El carrito muestra subtotales y total actualizados."]],
+["HU-11","Cliente","confirmar mi compra con mi dirección de envío","generar mi pedido",5,["Al confirmar se crea un pedido con estado Pendiente y el carrito queda vacío.","Se guarda el precio de cada producto al momento de la compra."]],
+["HU-12","Vendedor","ver la lista de pedidos y cambiar su estado","dar seguimiento a cada venta",3,["Veo los pedidos con cliente, total y estado.","Puedo cambiar el estado entre Pendiente, Pagado, Enviado y Entregado."]],
+["HU-13","Vendedor","registrar el pago de un pedido","confirmar que la venta está cubierta",2,["Registro método, monto y fecha del pago.","Al registrar el pago, el pedido pasa a Pagado."]]]},
+{n:4,t:"Reportes y publicación",h:[
+["HU-14","Cliente","ver el historial de mis pedidos y su estado","saber en qué punto está cada compra",3,["Solo veo mis propios pedidos.","Cada pedido muestra fecha, productos, total y estado."]],
+["HU-15","Vendedor","ver el detalle completo de un pedido","preparar el envío correctamente",2,["El detalle muestra productos, cantidades, dirección y datos de contacto.","Puedo volver a la lista sin perder los filtros."]],
+["HU-16","Administrador","ver un reporte de ventas por rango de fechas y los productos más vendidos","tomar decisiones sobre el catálogo",5,["Puedo elegir fecha inicial y final y ver el total vendido.","Veo los 5 productos más vendidos del periodo."]]]}];
+function line(h){return "["+h[4]+"] "+h[0]+" Como "+h[1]+", quiero "+h[2]+", para "+h[3]+"."}
+function full(h){return line(h)+"\n\nCriterios de aceptación:\n- "+h[5].join("\n- ")}
+function copy(txt,b){
+var d=b.textContent;
+function done(){b.textContent="Copiado";b.classList.add("ok");setTimeout(function(){b.textContent=d;b.classList.remove("ok")},1500)}
+function fb(){var t=document.createElement("textarea");t.value=txt;document.body.appendChild(t);t.select();try{document.execCommand("copy");done()}catch(e){b.textContent="Selecciona y copia a mano"}document.body.removeChild(t)}
+try{navigator.clipboard.writeText(txt).then(done,fb)}catch(e){fb()}}
+var app=document.getElementById("app");
+S.forEach(function(s){
+var pts=s.h.reduce(function(a,h){return a+h[4]},0);
+var sec=document.createElement("section");
+var h2=document.createElement("h2");h2.textContent="Sprint "+s.n+": "+s.t;
+var cb=document.createElement("button");cb.className="alt";cb.textContent="Copiar títulos";
+cb.onclick=function(){copy(s.h.map(line).join("\n"),cb)};h2.appendChild(cb);sec.appendChild(h2);
+var p=document.createElement("p");p.className="sub";p.textContent=s.h.length+" historias, "+pts+" puntos";sec.appendChild(p);
+s.h.forEach(function(h){
+var c=document.createElement("div");c.className="card";
+var top=document.createElement("div");top.className="top";
+[["id",h[0]],["tag "+h[1],h[1]],["pts",h[4]+" pts"]].forEach(function(x){var e=document.createElement("span");e.className=x[0];e.textContent=x[1];top.appendChild(e)});
+var st=document.createElement("p");st.className="story";st.textContent="Como "+h[1]+", quiero "+h[2]+", para "+h[3]+".";
+var ul=document.createElement("ul");h[5].forEach(function(t){var li=document.createElement("li");li.textContent=t;ul.appendChild(li)});
+var b=document.createElement("button");b.textContent="Copiar historia";b.onclick=function(){copy(full(h),b)};
+c.appendChild(top);c.appendChild(st);c.appendChild(ul);c.appendChild(b);sec.appendChild(c)});
+app.appendChild(sec)});
+</script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Guías paso a paso: Trello y Kanban</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#FBF9F5;--bg2:#F4EFE6;--wine:#6B1D2F;--wine-s:#F1E2E5;--gold:#F4B400;--ink:#2B2B2B;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*:before,*:after{box-sizing:inherit}
+html{scroll-padding-top:70px;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Montserrat,Inter,"Segoe UI",Arial,sans-serif;line-height:1.6;font-size:16px}
+header{background:var(--wine);color:#fff;padding:34px 20px 26px}
+header>div,main{max-width:900px;margin:0 auto}
+header h1{margin:0 0 8px;font-size:clamp(24px,4.5vw,38px);line-height:1.15;font-weight:800}
+header p{margin:0;max-width:62ch}
+.jump{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.jump a{background:var(--gold);color:var(--ink);font-weight:600;padding:8px 16px;text-decoration:none;border-radius:4px;font-size:14px}
+.jump a:focus-visible{outline:3px solid #fff;outline-offset:2px}
+main{padding:10px 20px 60px}
+h2.part{margin:44px 0 6px;color:var(--wine);font-size:clamp(22px,3.4vw,32px);font-weight:800;border-bottom:3px solid var(--gold);padding-bottom:8px}
+.step{display:flex;gap:14px;margin-top:20px}
+.step>i{flex:none;width:34px;height:34px;border-radius:50%;background:var(--gold);color:var(--wine);display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800;margin-top:2px}
+.step h3{margin:0 0 4px;color:var(--wine);font-size:clamp(16px,2.2vw,20px)}
+.step p,.step ul{margin:6px 0;max-width:72ch}.step ul{padding-left:20px}
+.tip{background:var(--wine-s);border-left:5px solid var(--gold);padding:10px 14px;border-radius:0 6px 6px 0;margin:10px 0;max-width:72ch}
+.tip b{color:var(--wine)}
+code{font-family:Consolas,Menlo,monospace;font-size:13px;background:var(--bg2);padding:1px 5px;border-radius:3px}
+.tw{overflow-x:auto;border:1px solid var(--wine);border-radius:6px;background:#fff;margin:12px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:520px}
+th{background:var(--wine);color:#fff;text-align:left;padding:8px 10px}
+td{padding:8px 10px;border-top:1px solid #e4d9c8;vertical-align:top}
+tr:nth-child(even) td{background:var(--bg2)}
+.board{display:grid;grid-template-columns:repeat(5,minmax(130px,1fr));gap:8px;overflow-x:auto;margin:14px 0;padding:10px;background:var(--bg2);border:2px solid var(--wine);border-radius:6px}
+.colm{background:#fff;border-radius:5px;padding:8px;min-height:120px}
+.colm h4{margin:0 0 8px;font-size:12px;color:var(--wine)}.colm h4 small{display:block;font-weight:400;color:var(--ink)}
+.cd{background:var(--gold);border-radius:3px;padding:6px 8px;font-size:12px;font-weight:600;margin-bottom:6px}
+.cd.w{background:var(--wine-s);border:1px solid var(--wine)}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:14px 0}
+.kpi div{background:#fff;border:2px solid var(--wine);border-radius:6px;padding:10px 14px;font-size:14px}.kpi b{color:var(--wine);display:block}
+</style>
+</head>
+<body>
+<header><div>
+<h1>Guías paso a paso: Trello y Kanban</h1>
+<p>Para organizar el proyecto ImportaChina: primero aprendes la herramienta (Trello) y luego el método que hay detrás del tablero (Kanban).</p>
+<div class="jump"><a href="#trello">Guía de Trello</a><a href="#kanban">Guía de Kanban</a></div>
+</div></header>
+<main>
+
+<h2 class="part" id="trello">Parte 1. Guía de Trello</h2>
+<p>Trello organiza el trabajo en tableros, listas y tarjetas. Usa el plan gratuito. Los nombres de los botones pueden variar un poco según la versión de la interfaz.</p>
+
+<div class="step"><i>1</i><div><h3>Crea tu cuenta</h3><p>Entra a trello.com, elige registrarte con tu correo (o con una cuenta de Google) y confirma el correo. Al entrar por primera vez, Trello te pedirá crear un espacio de trabajo.</p></div></div>
+
+<div class="step"><i>2</i><div><h3>Crea el espacio de trabajo</h3><p>Ponle el nombre de la materia o del equipo, por ejemplo "Desarrollo Web - Equipo 1". Un espacio de trabajo agrupa todos los tableros del equipo.</p></div></div>
+
+<div class="step"><i>3</i><div><h3>Crea el tablero</h3><p>Pulsa <b>Crear tablero</b> y llámalo <code>Gestión - ImportaChina</code>. En visibilidad, elige <b>Público</b> si el docente pidió un tablero público (cualquiera con el enlace podrá verlo), o <b>Espacio de trabajo</b> si solo debe verlo el equipo.</p></div></div>
+
+<div class="step"><i>4</i><div><h3>Crea las listas</h3><p>Cada lista es una columna del flujo de trabajo. Crea estas cinco, en este orden:</p>
+<ul><li><b>Backlog:</b> todas las historias de usuario pendientes.</li><li><b>Por Hacer:</b> las historias elegidas para el sprint actual.</li><li><b>En Proceso:</b> lo que se está desarrollando ahora.</li><li><b>En Pruebas:</b> lo terminado que se está verificando.</li><li><b>Hecho:</b> lo que cumple su definición de terminado.</li></ul></div></div>
+
+<div class="step"><i>5</i><div><h3>Crea una tarjeta por historia</h3><p>En <b>Backlog</b>, pulsa <b>Añadir una tarjeta</b> y escribe el título de la historia en el formato acordado:</p>
+<div class="tip"><b>Ejemplo:</b> Como Cliente, quiero filtrar productos por categoría, para encontrar lo que busco rápidamente.</div></div></div>
+
+<div class="step"><i>6</i><div><h3>Completa cada tarjeta</h3><p>Abre la tarjeta y agrega:</p>
+<ul><li><b>Descripción:</b> los criterios de aceptación (mínimo 2).</li><li><b>Lista de verificación:</b> las subtareas técnicas (migración, modelo, controlador, vista, prueba).</li><li><b>Miembros:</b> quién la desarrolla.</li><li><b>Fecha de entrega:</b> el último día del sprint.</li><li><b>Etiquetas:</b> un color por rol (Administrador, Vendedor, Cliente) y otro por sprint.</li></ul>
+<div class="tip"><b>Sugerencia:</b> escribe los puntos de la historia (1, 2, 3, 5 u 8) al inicio del título, por ejemplo "[5] Registro de cliente".</div></div></div>
+
+<div class="step"><i>7</i><div><h3>Invita al equipo y al docente</h3><p>Dentro del tablero, usa <b>Compartir</b> para invitar por correo o por enlace. Revisa que el docente tenga acceso antes de la primera revisión.</p></div></div>
+
+<div class="step"><i>8</i><div><h3>Trabaja el tablero cada día</h3><p>Arrastra la tarjeta a la siguiente lista cuando cambie su estado. Al iniciar un sprint, mueve desde Backlog a <b>Por Hacer</b> solo las historias que el equipo se comprometió a terminar.</p>
+<ul><li>Comenta en la tarjeta los bloqueos o dudas.</li><li>Adjunta capturas de pantalla o el enlace del Pull Request de GitHub.</li><li>Usa el filtro del tablero para ver solo tus tarjetas o las de un sprint.</li></ul></div></div>
+
+<div class="step"><i>9</i><div><h3>Cierra el sprint</h3><p>En la revisión, muestra la lista <b>Hecho</b>. Después archiva esas tarjetas desde el menú de la lista para dejar el tablero limpio, y deja una nota con los aprendizajes de la retrospectiva en una tarjeta fija.</p></div></div>
+
+<h2 class="part" id="kanban">Parte 2. Guía de Kanban</h2>
+<p>Kanban es un método para ver el trabajo, limitar lo que haces al mismo tiempo y mantener un flujo constante. Trello es solo la herramienta donde lo aplicas.</p>
+
+<div class="step"><i>1</i><div><h3>Entiende los tres principios</h3>
+<ul><li><b>Visualizar:</b> todo el trabajo está en el tablero, nada se hace "por fuera".</li><li><b>Limitar el trabajo en proceso (WIP):</b> menos cosas a la vez significa que se terminan antes.</li><li><b>Gestionar el flujo:</b> si una tarjeta se estanca, el equipo busca por qué.</li></ul></div></div>
+
+<div class="step"><i>2</i><div><h3>Diseña el tablero según tu flujo real</h3><p>Cada columna debe representar una etapa que de verdad existe en tu trabajo. Así se ve el tablero de ImportaChina a mitad del Sprint 2:</p>
+<div class="board" role="img" aria-label="Ejemplo de tablero Kanban con cinco columnas">
+<div class="colm"><h4>Backlog<small>sin límite</small></h4><div class="cd w">Reporte de ventas</div><div class="cd w">Estado de pago</div></div>
+<div class="colm"><h4>Por Hacer<small>los del sprint</small></div><div class="cd">Filtrar por categoría</div></div>
+<div class="colm"><h4>En Proceso<small>límite: 3</small></h4><div class="cd">Importar desde la API</div><div class="cd">CRUD de productos</div></div>
+<div class="colm"><h4>En Pruebas<small>límite: 2</small></h4><div class="cd">Detalle de producto</div></div>
+<div class="colm"><h4>Hecho<small>cumple la definición</small></h4><div class="cd w">Registro y login</div><div class="cd w">Roles</div></div>
+</div></div></div>
+
+<div class="step"><i>3</i><div><h3>Define reglas claras por columna</h3>
+<div class="tw"><table><tr><th>Columna</th><th>Una tarjeta entra cuando...</th><th>Sale cuando...</th></tr>
+<tr><td>Por Hacer</td><td>Está en el sprint y tiene criterios de aceptación.</td><td>Alguien la toma (sistema "pull").</td></tr>
+<tr><td>En Proceso</td><td>Tiene responsable y rama de Git.</td><td>El código está listo y subido en un Pull Request.</td></tr>
+<tr><td>En Pruebas</td><td>El Pull Request está abierto.</td><td>Pasa las pruebas y la revisión de un compañero.</td></tr>
+<tr><td>Hecho</td><td>Cumple todos los criterios de aceptación.</td><td>Se archiva al cerrar el sprint.</td></tr></table></div></div></div>
+
+<div class="step"><i>4</i><div><h3>Fija los límites WIP</h3><p>Escribe el límite junto al nombre de la columna y respétalo: si <b>En Proceso</b> ya tiene 3 tarjetas, nadie empieza una cuarta hasta terminar una.</p>
+<div class="tip"><b>Sugerencia para parejas:</b> En Proceso, máximo 3 tarjetas (o 2 por persona); En Pruebas, máximo 2. Si una columna siempre está llena, ahí está tu cuello de botella.</div></div></div>
+
+<div class="step"><i>5</i><div><h3>Aplica el sistema "pull"</h3><p>Nadie te asigna trabajo desde arriba: cuando terminas algo, tomas la siguiente tarjeta de <b>Por Hacer</b>, de izquierda a derecha y de arriba hacia abajo. Antes de empezar algo nuevo, mira si puedes ayudar a cerrar lo que está en Pruebas.</p></div></div>
+
+<div class="step"><i>6</i><div><h3>Haz una reunión diaria breve</h3><p>De 10 minutos, frente al tablero y de derecha a izquierda (primero lo más cercano a Hecho). Pregunta por cada tarjeta, no por cada persona: ¿qué la bloquea?, ¿qué falta para que avance?</p></div></div>
+
+<div class="step"><i>7</i><div><h3>Mide el flujo con dos datos</h3>
+<div class="kpi"><div><b>Tiempo de ciclo</b>Días desde que una tarjeta entra a En Proceso hasta que llega a Hecho.</div><div><b>Rendimiento</b>Cantidad de tarjetas terminadas por semana.</div></div>
+<p>Apunta la fecha en que mueves cada tarjeta. Si el tiempo de ciclo crece, revisa los límites WIP.</p></div></div>
+
+<div class="step"><i>8</i><div><h3>Combina Kanban con los sprints</h3><p>En este proyecto trabajas con sprints (Scrum) y con un tablero Kanban a la vez; a esa mezcla se le llama Scrumban. Los sprints marcan los plazos y las entregas, y Kanban cuida cómo fluye el trabajo dentro de cada sprint.</p></div></div>
+
+<div class="step"><i>9</i><div><h3>Evita los errores comunes</h3>
+<ul><li>Tener tarjetas "en proceso" sin que nadie las trabaje.</li><li>Ignorar el límite WIP "solo esta vez".</li><li>Tarjetas enormes: si pasa de 8 puntos, divídela.</li><li>Actualizar el tablero solo antes de la entrega: debe reflejar la realidad cada día.</li></ul></div></div>
+
+</main>
+</body>
+</html>

@@ -49,6 +49,13 @@ return [
         // Se usan cuando el administrador no escribe nada en el panel.
         'default_keyword' => env('ALIEXPRESS_DEFAULT_KEYWORD', 'bluetooth earbuds'),
         'margin_pct' => (float) env('ALIEXPRESS_MARGIN_PCT', 30),
+
+        // Modo demostracion: la API real exige verificar un numero de celular y
+        // Bolivia no esta entre los paises soportados, asi que sin credenciales
+        // la sincronizacion corre contra un catalogo local con la misma forma
+        // de la respuesta de la API. Nunca tapa credenciales reales: si hay
+        // app_key y app_secret, manda la API.
+        'demo' => filter_var(env('ALIEXPRESS_DEMO', false), FILTER_VALIDATE_BOOLEAN),
     ],
 
 ];

@@ -22,12 +22,24 @@ class AliExpressService
 
     public const PRODUCT_QUERY = 'aliexpress.affiliate.product.query';
 
+    /** Hay app_key y app_secret: se consulta la API real. */
+    public const MODE_LIVE = 'live';
+
+    /** Sin credenciales pero con ALIEXPRESS_DEMO=true: catalogo local. */
+    public const MODE_DEMO = 'demo';
+
+    /** Sin credenciales y sin modo demo: no se puede sincronizar. */
+    public const MODE_UNCONFIGURED = 'unconfigured';
+
     /** La API rechaza peticiones con una diferencia de tiempo mayor a 10 minutos. */
     private const PROTOCOL_VERSION = '2.0';
 
     private const TIMEOUT = 30;
 
-    public function __construct(private readonly HttpFactory $http) {}
+    public function __construct(
+        private readonly HttpFactory $http,
+        private readonly AliExpressDemoCatalog $demoCatalog,
+    ) {}
 
     /**
      * ¿Hay credenciales cargadas? El panel lo muestra antes de permitir sincronizar.
@@ -36,6 +48,26 @@ class AliExpressService
     {
         return filled(config('services.aliexpress.app_key'))
             && filled(config('services.aliexpress.app_secret'));
+    }
+
+    /**
+     * En que modo corre la sincronizacion.
+     *
+     * Las credenciales reales tienen prioridad: el modo demo nunca tapa una
+     * API configurada, solo la reemplaza cuando no hay claves.
+     */
+    public function mode(): string
+    {
+        if ($this->isConfigured()) {
+            return self::MODE_LIVE;
+        }
+
+        return config('services.aliexpress.demo') ? self::MODE_DEMO : self::MODE_UNCONFIGURED;
+    }
+
+    public function isDemo(): bool
+    {
+        return $this->mode() === self::MODE_DEMO;
     }
 
     /**
@@ -48,6 +80,10 @@ class AliExpressService
      */
     public function queryProducts(string $keyword = '', int $page = 1, int $pageSize = 50, array $extra = []): array
     {
+        if ($this->mode() === self::MODE_DEMO) {
+            return $this->demoQuery($page, $pageSize);
+        }
+
         if (! $this->isConfigured()) {
             throw AliExpressApiException::missingCredentials();
         }
@@ -97,6 +133,21 @@ class AliExpressService
         return [
             'items' => $items,
             'total' => is_numeric($total) ? (int) $total : count($items),
+        ];
+    }
+
+    /**
+     * Respuesta del catalogo local, con el mismo parseo que la API real.
+     *
+     * @return array{items: list<array<string, mixed>>, total: int}
+     */
+    private function demoQuery(int $page, int $pageSize): array
+    {
+        $items = $this->normalizeAll($this->demoCatalog->page($page, $pageSize));
+
+        return [
+            'items' => $items,
+            'total' => $this->demoCatalog->total(),
         ];
     }
 

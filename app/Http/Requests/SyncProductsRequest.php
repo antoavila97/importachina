@@ -43,7 +43,9 @@ class SyncProductsRequest extends FormRequest
 
     public function keyword(): ?string
     {
-        $keyword = trim((string) $this->validated()['keyword']);
+        // validated() solo trae las claves que venian en el request: si el
+        // cliente manda solo limit, keyword no existe y hay que tolerarlo.
+        $keyword = trim((string) ($this->validated()['keyword'] ?? ''));
 
         return $keyword !== '' ? $keyword : null;
     }
