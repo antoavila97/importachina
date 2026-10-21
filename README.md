@@ -29,7 +29,7 @@ php artisan serve          # http://127.0.0.1:8000
   aparte, nunca lo subas.
 - **Base de datos:** por defecto SQLite (`database/database.sqlite`, Laravel lo crea si no
   existe). Para MySQL cambiar `DB_CONNECTION` y `DB_*` en `.env` **antes** de migrar.
-- **Verificar la instalación:** `php artisan test` → **240 passing (822 assertions)**.
+- **Verificar la instalación:** `php artisan test` → **270 passing (971 assertions)**.
 - **Producción:** Railway despliega solo al hacer `git push` a `master`
   (<https://importachina-production.up.railway.app>).
 
