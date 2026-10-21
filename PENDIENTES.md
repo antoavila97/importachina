@@ -1344,3 +1344,51 @@ y la pregunta del "acceso como invitado" para la docente.
       **270 passing**.
 - [ ] **Pregunta para la docente:** confirmar si el "acceso como invitado" es el tablero
       Trello público o una cuarta persona en el sistema web. Ver la sección de arriba.
+
+---
+
+## COPIA INDEPENDIENTE PARA `anazabalapereira-tech` (21 de octubre de 2026)
+
+> **Objetivo:** Tener una copia 100% independiente del proyecto para que ella lo tenga en su propia cuenta de GitHub y lo despliegue en su propia cuenta de Railway. Al modificar el original, la copia **NO** se ve afectada y viceversa.
+
+### ✅ HECHO
+
+| # | Tarea | Detalle |
+|---|---|---|
+| 1 | **Commit del docx pendiente** | `docs/Documento_Requerimientos_ImportaChina.docx` commiteado en rama `docs/docx-20oct`, PR #30 mergeado a `master`. |
+| 2 | **Suite verificada** | `php artisan test` → **270 passing (971 assertions)** en original y en la copia. |
+| 3 | **Carpeta copia local** | Creada en `E:\PROYECTO SOCIOCOMUNITARIO PRODUCTIVO\importachina-copia`. Clonada con historial completo, sin `vendor/`, `node_modules/` ni `.env`. |
+| 4 | **Dependencias y build** | `composer install` + `npm install` + `npm run build` generados. `.env` creado localmente (ignorado por git). |
+| 5 | **Repo nuevo en GitHub** | Creado `https://github.com/anazabalapereira-tech/importachina` (público, **sin fork**, `forks: 0`, `parent: null`). Historial completo subido con PAT con scope `repo`. |
+| 6 | **README actualizado** | Apuntado al repo de ella y corregido el conteo de pruebas a **270 passing (971 assertions)**. PR #1 mergeado. |
+| 7 | **Token validado** | PAT classic con scope `repo` validado para `anazabalapereira-tech` y usado para subir el historial. **Pendiente revocar** (tarea 16). El valor literal se quitó de este documento el 21 de octubre: un token no se commitea ni se comparte. |
+
+### ⏸ PENDIENTE (Railway en incidencia global)
+
+> **Bloqueado:** Railway está con *Major Outage*. *"Dashboard, API and CLI unavailable, builds paused. New builds remain paused in all regions."* ([status.railway.com](https://status.railway.com/))  
+> **Decisión tomada:** Que **ella se cree su propia cuenta en Railway** con el Free Trial de 30 días. Así evita el límite de proyectos de la cuenta actual (`exciting-possibility` + `salon-glamour`) y queda totalmente independiente.
+>
+> **Revisado el 21 de octubre a las 13:40 UTC:** el incidente **sigue abierto**. La API ya
+> volvió, pero *"builds remain paused"* en todas las regiones, así que las tareas 9–15 siguen
+> esperando. No es un problema del proyecto: cuando Railway esté *Operational*, se retoma en
+> el punto 8.
+
+| # | Tarea | Detalle |
+|---|---|---|
+| 8 | **Esperar a que Railway se restablezca** | Revisar [status.railway.com](https://status.railway.com/) hasta que todo esté *Operational*. |
+| 9 | **Crear cuenta en Railway** | Ella crea su cuenta en [railway.app](https://railway.app) con su email. |
+| 10 | **Desplegar desde GitHub** | *New Project → Deploy from GitHub repo* → seleccionar `anazabalapereira-tech/importachina`. Si pide autorizar la GitHub App, aceptarlo. |
+| 11 | **Añadir MySQL** | *New → Database → Add MySQL*. Se crea con volumen nuevo. |
+| 12 | **Generar dominio** | *Settings → Networking → Generate Domain* → guardar la URL `*.up.railway.app` |
+| 13 | **Configurar variables de entorno** | Copiar las 26 variables del proyecto original. **Cambiar obligatoriamente:** `APP_KEY` (generar nueva con `php artisan key:generate --show`), `APP_URL` (poner la URL nueva con `https://`), `DB_PASSWORD` (la del **plugin MySQL nuevo**). Mantener `ALIEXPRESS_DEMO=true`, `APP_DEBUG=false`, `LOG_CHANNEL=stderr`. |
+| 14 | **Verificación en vivo** | Comprobar `/catalogo` 200, login con los 3 usuarios, `/admin/usuarios` y `/admin/reportes` como Admin, `/vendedor/pedidos` como Vendedor. |
+| 15 | **Entregar** | Pasarle la URL final + credenciales de prueba (`admin@/vendedor@/cliente@importachina.com` → `ImportaChina#2026`) + indicarle que puede clonar desde `https://github.com/anazabalapereira-tech/importachina` |
+| 16 | **Seguridad** | **Revocar el PAT** de `anazabalapereira-tech` desde *Settings → Developer settings → Personal access tokens → Tokens (classic) → Delete*. Fue el que se usó para subir el historial; el valor literal ya no está en este documento. |
+
+### Notas importantes
+
+- **Independencia total:** Su repo + su proyecto Railway + su MySQL. Un `git push` tuyo al repo original **NO** redespliega el sitio de ella.
+- **Procfile listo:** Ya tiene `web: php artisan migrate --force --seed && php artisan serve --host=0.0.0.0 --port=$PORT` por lo que `migrate` + `seed` corren en el primer deploy.
+- **Seeders idempotentes:** Tienen guard para no duplicar pedidos ni usuarios. También está el guard de `DemoSalesSeeder`.
+- **No copiar `.env`:** Nunca subir el `.env` al repo. Solo pasarle las variables al panel de Railway.
+- **README corregido:** Ya apunta a su propio repositorio.
