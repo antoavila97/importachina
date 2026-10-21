@@ -60,6 +60,7 @@ Route::middleware('auth')->group(function () {
         Route::get('api-sync', [AdminApiSyncController::class, 'index'])->name('api-sync.index');
         Route::post('api-sync', [AdminApiSyncController::class, 'sync'])->name('api-sync.sync');
         Route::get('reportes', [AdminReportController::class, 'index'])->name('reports.index');
+        Route::get('reportes/pdf', [AdminReportController::class, 'pdf'])->name('reports.pdf');
     });
 });
 

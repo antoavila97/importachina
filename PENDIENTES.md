@@ -1,5 +1,11 @@
 # PENDIENTES — ImportaChina
 
+> **Pendiente abierto (21 de octubre de 2026) — PUNTO 11:** reportes de **pedidos,
+> productos, categorías y usuarios** con **descarga en PDF**. Va en los dos repos
+> (`antoavila97/importachina` y `zabalapereiraa1-ui/importachina`). Solo el rol
+> **Administrador** los ve y los genera; al Vendedor y al Cliente no se les muestra
+> el enlace. Detalle al final del archivo.
+
 > **Última actualización:** 21 de octubre de 2026 — **descartado el pendiente del
 > "acceso como invitado"**: se asume que era el tablero Trello público y no se implementa
 > nada en el sistema. Antes, el **13 de octubre de 2026:** **documento de requerimientos
@@ -1398,3 +1404,50 @@ php vendor\bin\pint app/.../X.php tests/...
 - **Seeders idempotentes:** Tienen guard para no duplicar pedidos ni usuarios. También está el guard de `DemoSalesSeeder`.
 - **No copiar `.env`:** Nunca subir el `.env` al repo. Solo pasarle las variables al panel de Railway.
 - **README corregido:** Ya apunta a su propio repositorio.
+
+---
+
+# PUNTO 11 - Reportes de pedidos, productos, categorias y usuarios (con PDF)
+
+> **Abierto el 21 de octubre de 2026.** Hoy `/admin/reportes` solo muestra el reporte de
+> ventas (HU-16). Hay que poder generar reportes de **pedidos, productos, categorías y
+> usuarios** y descargar **cualquiera de los cinco en PDF**. Se implementa igual en los
+> dos repos: `antoavila97/importachina` (original) y `zabalapereiraa1-ui/importachina`
+> (copia de ella).
+
+## Acceso
+
+Solo el rol **Administrador**. Vendedor y Cliente reciben 403 y **no ven el enlace en el
+menú**: la navegación ya filtra por rol en
+`resources/views/components/app-nav-links.blade.php` (cada enlace tiene su `show`), y el
+dashboard esconde las tarjetas de admin con `@if ($isAdmin)`. El reporte nuevo se suma a
+esa misma regla: **no se agrega ningún enlace visible para los otros roles**.
+
+## Alcance
+
+| Reporte | Qué muestra | Filtros |
+|---|---|---|
+| Ventas (ya existe) | resumen, top 5 productos, venta por día | desde/hasta |
+| Pedidos | n.º de pedido, fecha, cliente, estado, ítems, total | desde/hasta, estado |
+| Productos | producto, categoría, costo, margen, precio, stock, estado, unidades vendidas | categoría, activo, stock |
+| Categorías | categoría, productos (total/activos), unidades vendidas, ingresos | desde/hasta |
+| Usuarios | nombre, email, rol, estado, alta, pedidos, total comprado | rol, estado, desde/hasta |
+
+## Tareas
+
+- [ ] Agregar `barryvdh/laravel-dompdf` (composer) en los dos repos.
+- [ ] Pestañas Ventas / Pedidos / Productos / Categorías / Usuarios en `/admin/reportes`.
+- [ ] Filtros por pestaña, conservados al cambiar de pestaña y al descargar el PDF.
+- [ ] Botón "Descargar PDF" en cada pestaña, con los filtros activos.
+- [ ] Ruta `GET /admin/reportes/pdf?tipo=...` (con validación del tipo) solo para Admin.
+- [ ] Plantilla PDF única: A4, DejaVu Sans, encabezado con período y fecha de generación,
+      tabla con `thead` repetido y numeración de páginas.
+- [ ] Pruebas: acceso por rol, 403 para no-admin, PDF `application/pdf`, filtros y totales.
+- [ ] Replicar en la copia con su paleta (teal/slate, Manrope), sin cambiar el comportamiento.
+
+## Criterios de aceptación
+
+- Un Admin ve las 5 pestañas y descarga el PDF de cada una.
+- El PDF respeta los filtros de la pantalla y muestra el período consultado.
+- Vendedor y Cliente reciben 403 en `/admin/reportes` y en el PDF, y no ven el enlace.
+- `php artisan test` sigue en verde en los dos repos.
