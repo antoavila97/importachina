@@ -30,6 +30,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         libzip-dev \
         libicu-dev \
+        ca-certificates \
         unzip \
     && docker-php-ext-install -j"$(nproc)" pdo_mysql zip intl opcache \
     && apt-get clean \
