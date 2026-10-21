@@ -1,11 +1,12 @@
 # PENDIENTES — ImportaChina
 
-> **Última actualización:** 13 de octubre de 2026 — **documento de requerimientos
+> **Última actualización:** 21 de octubre de 2026 — **descartado el pendiente del
+> "acceso como invitado"**: se asume que era el tablero Trello público y no se implementa
+> nada en el sistema. Antes, el **13 de octubre de 2026:** **documento de requerimientos
 > (§1-2) y registro de ceremonias ágiles (§11) creados**, **punto 9 cerrado** (idioma),
 > **`php artisan optimize` agregado al arranque** (§10) y **limpieza del código muerto y
 > de los duplicados de `docs/`**. Con esto ya no queda ningún pendiente de código ni
-> documental del núcleo: lo que sigue son cosas externas al repo (Trello, Figma) o
-> preguntas para la docente.
+> documental del núcleo: lo que sigue son cosas externas al repo (Trello, Figma).
 >
 > - **Limpieza:** borrados el splash `resources/views/welcome.blade.php` y
 >   `app/Http/Controllers/HomeController.php` (código muerto, no ruteado) y los duplicados
@@ -49,8 +50,7 @@
 >
 > **Al volver:** ya no queda ningún pendiente del núcleo. Queda el tablero Trello público
 > y los wireframes de Figma (externos al repo; ayudan a la nota pero la app ya está
-> completa y publicada) y **preguntarle a la docente qué es el "acceso como invitado"**,
-> que es lo único que no se puede resolver leyendo las guías.
+> completa y publicada).
 >
 > Con el punto 10 cerrado **ninguna historia de usuario está sin tests**.
 > Lo que queda es casi todo documental o decisiones de la docente. Ver "PUNTO 7".
@@ -1174,7 +1174,12 @@ Lo que **si** tiene valor real:
 | Las claves de la API en el servidor, nunca en el navegador | ✅ `config/services.php` |
 | Formato de nota `Como [rol], quiero [acción] para [beneficio]` | ✅ las 16 de la guía 4.3 |
 
-### ⬜ Pregunta abierta: el "acceso como invitado" de la docente
+### ✅ Descartado: el "acceso como invitado" de la docente
+
+> **Decisión tomada el 21 de octubre de 2026: no se implementa nada.** Se deja de
+> considerarlo un pendiente y se asume que se refería al **tablero Trello público**, no a
+> una funcionalidad del sistema web. El catálogo `/catalogo` ya es público, así que
+> "mirar la tienda sin iniciar sesión" hoy ya funciona.
 
 La docente dijo que hacía falta "una opción para que ella entre a mirar como invitado".
 **Revisadas las 3 guías HTML y el `.txt`, la palabra "invitado" no aparece en ninguna.**
@@ -1188,20 +1193,20 @@ Lo que sí aparece:
 | Guía 4.2 §7 | "**Invita al equipo y al docente**" — Compartir del tablero Trello |
 | `.txt` línea 38 | "Crea un tablero **público** ... llamado 'Gestión - ImportaChina'" |
 
-**Hipótesis más probable:** se refiere al **tablero Trello público**, no al sistema web.
-No requiere código: es cambiar la visibilidad del tablero a "Público".
-**Pendiente de confirmar con ella antes de implementar nada.**
+De ahí sale la interpretación adoptada: es el **tablero Trello público**. No requiere
+código, solo cambiar la visibilidad del tablero a "Público" (sigue en la lista de tareas
+externas del repo).
 
-Si resultara que sí es dentro del sistema web, las opciones son:
+Quedan **descartadas** estas tres variantes dentro del sistema web:
 
-| Opción | Qué implica |
-|---|---|
-| A. Cuenta con credenciales | Un usuario más en el seeder (ej. `docente@importachina.com`). Lo más simple. |
-| B. Rol `Invitado` de solo lectura | Cuarto rol. Entra a panel, pedidos y reportes, pero sin botones de guardar/borrar. Hay que decidir si cuenta como los 3 roles de la guía. |
-| C. Botón "Entrar como invitado" en el login | Entra sin contraseña, solo lectura. Rápido de mostrar, menos realista. |
+| Opción | Qué implicaba | Estado |
+|---|---|---|
+| A. Cuenta con credenciales | Un usuario más en el seeder (ej. `docente@importachina.com`). | ❌ No se hace |
+| B. Rol `Invitado` de solo lectura | Cuarto rol. Entraría a panel, pedidos y reportes, sin botones de guardar/borrar; además choca con los 3 roles de la guía. | ❌ No se hace |
+| C. Botón "Entrar como invitado" en el login | Entrar sin contraseña, solo lectura. Rápido de mostrar, menos realista. | ❌ No se hace |
 
-**Nota:** el catálogo `/catalogo` **ya es público** (se entra sin credenciales), así que "mirar
-la tienda sin iniciar sesión" hoy ya funciona.
+No se agregan roles, usuarios ni rutas: el sistema queda con los **3 roles** que pide la
+guía 4.1 §1.
 
 ---
 
@@ -1301,8 +1306,7 @@ php vendor\bin\pint app/.../X.php tests/...
 ## Checklist para retomar
 
 **Orden sugerido:** ya no queda ningún pendiente de código ni documental del núcleo. Lo
-único que resta son cosas externas al repo (tablero Trello público y wireframes de Figma)
-y la pregunta del "acceso como invitado" para la docente.
+único que resta son cosas externas al repo (tablero Trello público y wireframes de Figma).
 
 - [x] **Punto 8 (el bug de HU-01):** hecho el 4 de octubre. `RegisteredUserController::store()`
       ahora asigna `role_id` con `Role::firstOrCreate(['name' => 'Cliente'])->id` y `status`
@@ -1325,7 +1329,8 @@ y la pregunta del "acceso como invitado" para la docente.
 - [x] **Punto 9 (idioma):** **cerrado el 13 de octubre.** `lang/es.json` traduce las pantallas
       de Breeze que quedaban en inglés y `LocalizationTest` (6 tests) lo cubre. Ver la
       sección de arriba.
-- [ ] **Punto 7, lo que bloquea la nota:**
+- [x] **Punto 7, lo que bloqueaba la nota:** todo cerrado entre el 8 y el 21 de octubre.
+      Solo quedan fuera del repo el tablero Trello público y los wireframes de Figma.
       - [x] documento de requerimientos (§1-2 de la guía 4.1) — **hecho el 13 de octubre**,
             en `docs/Documento_Requerimientos_ImportaChina.docx`
       - [x] tests de HU-09 — hechos en el punto 10 (`CatalogPageTest`, 10 tests)
@@ -1342,8 +1347,9 @@ y la pregunta del "acceso como invitado" para la docente.
 - [x] **Limpieza:** **hecha el 13 de octubre.** Borrados `welcome.blade.php` +
       `HomeController` (código muerto) y los duplicados de `docs/`. `php artisan test` →
       **270 passing**.
-- [ ] **Pregunta para la docente:** confirmar si el "acceso como invitado" es el tablero
-      Trello público o una cuarta persona en el sistema web. Ver la sección de arriba.
+- [x] **Acceso como invitado:** **descartado el 21 de octubre.** Se asume que se refería al
+      tablero Trello público, no al sistema web, así que no se agregan roles, usuarios ni
+      rutas: siguen los 3 roles de la guía 4.1 §1. Ver la sección de arriba.
 
 ---
 
