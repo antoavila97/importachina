@@ -1385,6 +1385,44 @@ php vendor\bin\pint app/.../X.php tests/...
 > esperando. No es un problema del proyecto: cuando Railway esté *Operational*, se retoma en
 > el punto 8.
 
+#### Revisión del 22 de octubre (02:19 UTC) — por qué no se puede desplegar
+
+Verificado contra el estado real, no contra lo que uno supone:
+
+| Comprobación | Resultado |
+|---|---|
+| `status.railway.com` | **Major Outage** desde el 21 oct 07:24 UTC. *"Builds remain paused"* en todas las regiones. Última actualización 02:19 UTC: siguen sin habilitar los builds. |
+| ¿Qué volvió y qué no? | **Volvieron** el dashboard, la API (`backboard.railway.com` responde GraphQL 200), la CLI y `station.railway.com` (200). **Sigue caído solo el pipeline de builds** en las 4 regiones. Por eso el sitio se ve vivo pero ningún push construye. |
+| Revisado a las 02:38 UTC | El incidente sigue abierto y la próxima actualización es a las **03:00 UTC**. Railway avisó que los deploys disparados durante la pausa **no quedan en cola**: hay que volver a dispararlos cuando reabran. |
+| Sitio original | `https://importachina-production.up.railway.app/catalogo` → **200** (la app vieja sigue arriba). |
+| ¿Código nuevo desplegado? | **No.** `GET /admin/reportes/pdf` → **404**, aunque la ruta existe en `routes/web.php:63`. El commit `5c93f0f` (reportes PDF) quedó pusheado a `master` a las 19:55 UTC y **nunca se construyó**. |
+| CLI local | `railway whoami` → **Unauthorized**. La CLI de esta máquina no está autenticada (`railway login`), y además Railway invalidó las sesiones OAuth como parte del incidente. |
+| Autodeploy GitHub | **Desconectado.** Railway reseteó los tokens de GitHub: hay que reconectar la cuenta y revisar *Settings → Source* de cada servicio. |
+| Código apto para build | **Sí.** `npm ci` valida el `package-lock` (sync), `npm run build` compila (`app-BcWtIyrv.css`, 8.45 s), `composer.lock` y `Procfile` presentes. No hay nada que arreglar en el repo. |
+
+**Conclusión:** el deploy no falla por código ni por configuración. Railway tiene los builds
+pausados globalmente y, encima, la conexión con GitHub quedó invalidada por el incidente de
+seguridad. No hay comando ni cambio en el repo que lo destrabe antes de que Railway reabra
+builds.
+
+**Cuando Railway vuelva, en este orden:**
+
+1. `railway login` en esta máquina (o definir `RAILWAY_TOKEN` en el entorno).
+2. Reconectar GitHub en [railway.com/account](https://railway.com/account) y revisar la
+   instalación de la GitHub App (`github.com/apps/railway-app`).
+3. En cada servicio: *Settings → Source* → confirmar repo/rama; si dice desconectado,
+   *Disconnect* y *Connect Repo*.
+4. *Deploy Latest Commit* (o `railway redeploy`) y verificar `/admin/reportes/pdf` → 200 en vez
+   de 404.
+5. **Seguridad:** Railway recomienda rotar **todas** las variables guardadas en el panel
+   (`APP_KEY`, `DB_PASSWORD`, `ALIEXPRESS_*`) y la contraseña del MySQL. Los builds pausados
+   impiden redesplegar con las credenciales nuevas; se hace en cuanto reabran.
+
+**Mientras tanto:** la copia ya está publicada en Render
+(`https://importachina.onrender.com`) y esa sí tiene la ruta del PDF (responde con la pantalla
+de login, no con 404). Es el plan B válido para mostrar el sistema funcionando sin esperar a
+Railway.
+
 | # | Tarea | Detalle |
 |---|---|---|
 | 8 | **Esperar a que Railway se restablezca** | Revisar [status.railway.com](https://status.railway.com/) hasta que todo esté *Operational*. |
