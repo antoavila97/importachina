@@ -1,111 +1,142 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# ImportaChina
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplicación web para gestionar un catálogo de productos importados desde AliExpress: catálogo, carrito, pedidos, pagos, usuarios con roles y reportes con exportación a PDF.
 
-## ImportaChina — correr el proyecto en otra PC
+- **Backend:** Laravel 12 / PHP 8.3
+- **Base de datos:** SQLite por defecto (MySQL opcional)
+- **Frontend:** Blade + Tailwind CSS + Vite
+- **Tablero:** [Gestión - ImportaChina](https://github.com/users/antoavila97/projects/3/views/1) (público)
+- **Documentación:** [`docs/`](docs/) y [`PENDIENTES.md`](PENDIENTES.md)
 
-Requisitos: PHP 8.3+ con las extensiones de Laravel, Composer y Node.js.
+## Requisitos
+
+- PHP **8.2+** (recomendado 8.3) con las extensiones `pdo_sqlite`, `mbstring`, `openssl`, `fileinfo`, `zip`, `gd`, `intl` y `dom`.
+- [Composer](https://getcomposer.org/) 2.x.
+- [Node.js](https://nodejs.org/) **20.19+** o **22.12+** y npm.
+- Git.
+
+En Windows podés usar Laragon o XAMPP; en Linux/macOS, el PHP de tu distribución o Homebrew.
+
+## Instalación rápida (SQLite, sin instalar MySQL)
 
 ```bash
 git clone https://github.com/antoavila97/importachina.git
 cd importachina
-composer install
-npm install
-copy .env.example .env     # en Linux/macOS: cp .env.example .env
-php artisan key:generate
-php artisan migrate --seed
-npm run build              # genera public/build (CSS/JS de Vite)
-php artisan serve          # http://127.0.0.1:8000
+composer setup
+php artisan serve
 ```
 
-- **`.env` no está en el repo** (guarda contraseñas). El `.env.example` trae todo lo
-  necesario: `APP_LOCALE=es`, `ALIEXPRESS_DEMO=true` (modo demo de HU-05) y API de
-  AliExpress vacía. Si querés la misma configuración que otra máquina, copiá el `.env`
-  aparte, nunca lo subas.
-- **Base de datos:** por defecto SQLite (`database/database.sqlite`, Laravel lo crea si no
-  existe). Para MySQL cambiar `DB_CONNECTION` y `DB_*` en `.env` **antes** de migrar.
-- **Verificar la instalación:** `php artisan test` → **270 passing (971 assertions)**.
-- **Producción:** Railway despliega solo al hacer `git push` a `master`
-  (<https://importachina-production.up.railway.app>).
+Abrí <http://127.0.0.1:8000>.
 
-## About Laravel
+`composer setup` hace todo:
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+1. Instala las dependencias de PHP y Node.
+2. Copia `.env.example` a `.env` si todavía no existe.
+3. Genera la `APP_KEY`.
+4. Crea `database/database.sqlite`.
+5. Ejecuta las migraciones y los seeders.
+6. Carga el catálogo y las ventas de demostración.
+7. Compila los assets con Vite en `public/build`.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Usuarios de prueba (instalación local)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| Email | Contraseña | Rol |
+|---|---|---|
+| `admin@importachina.com` | `password` | Administrador |
+| `vendedor@importachina.com` | `password` | Vendedor |
+| `cliente@importachina.com` | `password` | Cliente |
 
-## Learning Laravel
+> En el despliegue de producción las mismas cuentas usan `ImportaChina#2026`.
+> Cambiá la contraseña desde **Admin → Usuarios** si vas a publicar el sitio.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Instalación manual
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Si preferís hacer los pasos uno por uno:
 
-## Laravel Sponsors
+```bash
+git clone https://github.com/antoavila97/importachina.git
+cd importachina
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+composer install
+cp .env.example .env                 # Windows CMD: copy .env.example .env
+php artisan key:generate
 
-### Premium Partners
+php -r "file_exists('database/database.sqlite') || touch('database/database.sqlite');"
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+php artisan migrate --seed
+php artisan db:seed --class=DemoSalesSeeder --force
 
-## Contributing
+npm ci
+npm run build
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+php artisan serve
+```
 
-## Code of Conduct
+### Usar MySQL en vez de SQLite
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Editá `.env` **antes** de migrar:
 
-## Security Vulnerabilities
+```dotenv
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=importachina
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Creá la base `importachina` en MySQL y después ejecutá:
 
-## License
+```bash
+php artisan migrate --seed
+php artisan db:seed --class=DemoSalesSeeder --force
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Reiniciar la base local
 
+```bash
+php artisan migrate:fresh --seed
+php artisan db:seed --class=DemoSalesSeeder --force
+```
+
+## Comandos útiles
+
+```bash
+php artisan test          # 282 pruebas
+php artisan serve         # servidor en http://127.0.0.1:8000
+npm run dev               # Vite con recarga en caliente
+npm run build             # compila CSS/JS para producción
+php artisan migrate       # aplica migraciones nuevas
+```
+
+## Problemas comunes
+
+- **`could not find driver`**: falta `pdo_sqlite` (o `pdo_mysql` si usás MySQL). Habilitala en `php.ini`.
+- **`No application encryption key has been specified`**: ejecutá `php artisan key:generate`.
+- **`Vite manifest not found`**: ejecutá `npm ci && npm run build`.
+- **La base SQLite no existe**: ejecutá `php -r "file_exists('database/database.sqlite') || touch('database/database.sqlite');"` y volvé a migrar.
+- **Cambiaste el puerto**: actualizá `APP_URL` en `.env` (por defecto `http://localhost:8000`).
+
+## Estructura del proyecto
+
+```
+app/                 Controladores, modelos, middleware y servicios
+database/migrations  Esquema de la base
+database/seeders     Roles, usuarios, catálogo y ventas de demo
+docs/                Requerimientos, historias de usuario y ceremonies
+resources/views      Vistas Blade
+routes/web.php       Rutas de la aplicación
+tests/               Pruebas de funcionalidad
+```
+
+## Despliegue
+
+- **Railway:** <https://importachina-production.up.railway.app>
+- El despliegue usa las variables de entorno del panel; `.env` **no** se sube al repositorio.
+- El arranque ejecuta `php artisan migrate --force --seed` y `php artisan optimize`.
 
 ## Gestión del proyecto
 
-Tablero: GitHub Projects > Gestion - ImportaChina
-
-### Historias de usuario (issues)
-
-| # | Historia |
-|---|---|
-|US-01|Como Administrador, quiero gestionar usuarios y roles, para controlar el acceso|
-|US-02|Como Administrador, quiero sincronizar productos desde la API de AliExpress|
-|US-03|Como Administrador, quiero definir el margen de ganancia|
-|US-04|Como Administrador, quiero ver reportes de ventas|
-|US-05|Como Vendedor, quiero revisar pedidos|
-|US-06|Como Vendedor, quiero cambiar el estado del pedido|
-|US-07|Como Vendedor, quiero registrar el pago|
-|US-08|Como Cliente, quiero registrarme e iniciar sesión|
-|US-09|Como Cliente, quiero buscar productos por palabra clave usando la API|
-|US-10|Como Cliente, quiero filtrar productos por categoría|
-|US-11|Como Cliente, quiero ver el detalle del producto|
-|US-12|Como Cliente, quiero usar el carrito de compras|
-|US-13|Como Cliente, quiero confirmar mi compra|
-|US-14|Como Cliente, quiero ver mi historial de pedidos|
-|US-15|Como Administrador, quiero registrar cada sincronización de API en logs|
-|US-16|Como Cliente, quiero ver imágenes y precios actualizados|
+- Tablero principal: <https://github.com/users/antoavila97/projects/3/views/1>
+- Copia del tablero en la cuenta de ella: <https://github.com/users/zabalapereiraa1-ui/projects/3/views/1>
+- Historias de usuario: [`docs/tablero.md`](docs/tablero.md) y [`docs/16_historias_de_usuario_ImportaChina.txt`](docs/16_historias_de_usuario_ImportaChina.txt)
