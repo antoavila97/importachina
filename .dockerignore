@@ -12,6 +12,8 @@ node_modules
 vendor
 
 # Artefactos de build: se generan dentro de la imagen
+database/*.sqlite
+database/*.sqlite-journal
 public/build
 public/hot
 public/storage
